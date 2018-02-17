@@ -1,0 +1,20 @@
+﻿Troops:
+1. Builder
+2. Commander
+3. Soldier
+4. Archer (Range)
+5. Knight (Slow, high health)
+
+Buildings:
+1. Farm (Increases max troops)
+2. Workshop (Builder drop off, increases max resources)
+3. Training House (Makes troops)
+4. Defense Tower
+5. Wall
+
+Props:
+1. Bush
+2. Tree
+3. Large Tree
+4. Small Rock
+5. Large Rock
