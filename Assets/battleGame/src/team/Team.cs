@@ -1,4 +1,5 @@
-﻿using System;
+﻿using src.entity;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -73,8 +74,8 @@ namespace src.team {
             return this.members;
         }
 
-        public static Team teamFromEnum(EnumTeam e) {
-            switch (e) {
+        public static Team teamFromEnum(EnumTeam enumTeam) {
+            switch (enumTeam) {
                 case EnumTeam.RED: return Team.RED;
                 case EnumTeam.BLUE: return Team.BLUE;
                 case EnumTeam.YELLOW: return Team.YELLOW;

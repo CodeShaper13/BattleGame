@@ -9,7 +9,7 @@ namespace src.buildings {
             return Vector2.one;
         }
 
-        public override BuildingData getBuildingData() {
+        public override BuildingData getData() {
             return Constants.BD_STOREROOM;
         }
     }

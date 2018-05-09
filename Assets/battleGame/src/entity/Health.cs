@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
-namespace src {
+namespace src.entity {
 
     /// <summary>
     /// Manages the health level and automatically updates the health bar ui effect.
@@ -8,16 +9,27 @@ namespace src {
     /// </summary>
     public class Health : MonoBehaviour {
 
-        private int maxHealth = 10;
+        public int maxHealth = -1;
 
-        [SerializeField]
+        [SerializeField] // Serialized for debug reasons so we can see it in the inspector.
         private int health;
         [SerializeField]
         private RectTransform rect;
         private float originalX;
+        private Image img;
+
+        public static Health instantiateHealthbar(GameObject holderObj, ILiving living) {
+            Vector3 pos = holderObj.transform.position + new Vector3(0, living.getHealthBarHeight(), 0);
+            Health health = GameObject.Instantiate(References.list.healthBarEffect, pos, Quaternion.identity).GetComponent<Health>();
+            health.transform.SetParent(holderObj.transform);
+            health.gameObject.name = "HealthBarCanvas";
+            health.setMaxHealth(living.getMaxHealth());
+            return health;
+        }
 
         private void Awake() {
             this.originalX = this.rect.sizeDelta.x;
+            this.img = this.rect.GetComponent<Image>();
         }
 
         private void Start() {
@@ -29,6 +41,7 @@ namespace src {
         /// </summary>
         public void setMaxHealth(int amount) {
             this.maxHealth = amount;
+            this.setHealth(this.maxHealth);
         }
 
         /// <summary>
@@ -49,7 +62,19 @@ namespace src {
             this.health = Mathf.Clamp(amount, 0, this.maxHealth);
             float f = this.originalX / this.maxHealth;
             this.rect.sizeDelta = new Vector2(this.health * f, this.rect.sizeDelta.y);
-            return this.health == 0;
+
+            // Update color.
+            Color c;
+            if(this.health < (this.maxHealth / 4)) {
+                c = Color.red;
+            } else if(this.health < (this.maxHealth / 2)) {
+                c = new Color(0.8f, 0.5f, 0);
+            } else {
+                c = Color.green;
+            }
+            this.img.color = c;
+
+            return (this.health <= 0);
         }
     }
 }

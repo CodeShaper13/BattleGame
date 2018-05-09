@@ -1,5 +1,7 @@
 ﻿using fNbt;
+using src.buildings;
 using src.buildings.harvestable;
+using src.entity;
 using src.registry;
 using src.team;
 using System.Collections.Generic;
@@ -34,7 +36,11 @@ namespace src.map {
         }
 
         private void Start() {
-            this.spawnEntity(EntityRegistry.unitBuilder, new Vector3(0, 1, 0), Quaternion.identity);
+            //this.spawnEntity(EntityRegistry.unitBuilder, new Vector3(0, 1, 0), Quaternion.identity);
+        }
+
+        private void OnDestroy() {
+            Map.instance = null;
         }
 
         public static Map getInstance() {
@@ -122,11 +128,16 @@ namespace src.map {
         /// Instantiates a Prefab.
         /// </summary>
         private SidedObjectBase instantiateEntityPrefab(GameObject prefab, bool placeInWrapper = true) {
-            GameObject gameObject = GameObject.Instantiate(prefab);
+            GameObject obj = GameObject.Instantiate(prefab);
+            SidedObjectBase entity = obj.GetComponent<SidedObjectBase>();
+
             if (placeInWrapper) {
-                gameObject.transform.parent = this.entityHolder;
+                if(entity is BuildingBase) {
+                    obj.transform.parent = this.buildingHolder;
+                } else {
+                    obj.transform.parent = this.entityHolder;
+                }
             }
-            SidedObjectBase entity = gameObject.GetComponent<SidedObjectBase>();
             // Team stuff is set in the objects script.
             return entity;
         }

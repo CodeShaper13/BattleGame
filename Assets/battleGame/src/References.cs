@@ -13,7 +13,7 @@ namespace src {
 
         private void Awake() {
             References.list = this;
-            RegistryBase.registryBootstrap();
+            Registry.registryBootstrap();
         }
 
         // Units
@@ -29,5 +29,7 @@ namespace src {
         public GameObject buildingStoreroom;
         public GameObject buildingTower;
         public GameObject buldingWall;
+
+        public GameObject healthBarEffect;
     }
 }

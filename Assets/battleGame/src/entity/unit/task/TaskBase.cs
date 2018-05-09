@@ -1,12 +1,12 @@
 ﻿using src.team;
 using UnityEngine;
 
-namespace src.troop.task {
+namespace src.entity.unit.task {
 
     public abstract class TaskBase<T> : ITask where T : UnitBase<T> {
 
         /// <summary>
-        /// The Unit runnign the task.
+        /// The Unit running the task.
         /// </summary>
         protected readonly T unit;
 

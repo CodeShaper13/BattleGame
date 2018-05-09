@@ -1,9 +1,10 @@
-﻿using src.troop;
+﻿using src.entity.unit;
 using src.ui;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using src.entity;
 
 namespace src {
 
@@ -46,7 +47,7 @@ namespace src {
                 UnitBase unit = this.get(i);
                 if(unit != null) {
                     string s = unit.getHealth() + "/" + unit.getMaxHealth();
-                    this.buttonText[i].text = unit.getUnitName() + "\n" + s;
+                    this.buttonText[i].text = unit.getData().getName() + "\n" + s;
                 } else {
                     this.buttonText[i].text = "...";
                 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace src.troop.task {
+namespace src.entity.unit.task {
 
     public class TaskAttackNearby : TaskBase<UnitFighting> {
 
@@ -23,7 +23,7 @@ namespace src.troop.task {
 
             if (this.findTarget()) {
                 if(this.attackCooldown <= 0 && this.canReach(this.target, this.target.getSizeRadius() + this.unit.getSizeRadius())) {
-                    this.target.damage(unit.getDamageDelt());
+                    this.target.damage(unit.getData().getDamageDelt());
                     this.attackCooldown = Constants.TROOP_ATTACK_RATE;
                 } else {
                     this.setDestination(this.target);

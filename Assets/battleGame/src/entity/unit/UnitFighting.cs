@@ -1,6 +1,6 @@
 ﻿using src.button;
 
-namespace src.troop {
+namespace src.entity.unit {
 
     public abstract class UnitFighting : UnitBase<UnitFighting> {
 

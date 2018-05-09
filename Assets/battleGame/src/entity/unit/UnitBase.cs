@@ -1,8 +1,12 @@
-﻿using src.troop.task;
+﻿using fNbt;
+using src.data;
+using src.entity.unit.statistics;
+using src.entity.unit.task;
+using src.util;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace src.troop {
+namespace src.entity.unit {
 
     public abstract class UnitBase : SidedObjectEntity {
 
@@ -10,9 +14,13 @@ namespace src.troop {
         private NavMeshAgent agent;
         private ITask task;
 
+        private Stats unitStats;
+        private Vector3 lastPos;
+
         protected override void onAwake() {
             base.onAwake();
             this.agent = this.GetComponent<NavMeshAgent>();
+            this.lastPos = this.transform.position;
         }
 
         protected override void onUpdate() {
@@ -23,17 +31,21 @@ namespace src.troop {
                     this.task = null;
                 }
             }
+
+            // Update Distance Moved stat.
+            if(this.transform.position != this.lastPos) {
+                this.unitStats.distanceWalked.increase(Vector3.Distance(this.transform.position, this.lastPos));
+            }
+            this.lastPos = this.transform.position;
         }
 
         public override void onDeathCallback() {
             base.onDeathCallback();
-            CameraMover.singleton.party.remove(this);
+            CameraMover.instance().party.remove(this);
             GameObject.Destroy(this.gameObject);
         }
 
-        public abstract int getDamageDelt();
-
-        public abstract string getUnitName();
+        public abstract EntityData getData();
 
         /// <summary>
         /// Easier way to get the position vector of the unit.
@@ -57,6 +69,9 @@ namespace src.troop {
             this.agent.stoppingDistance = breakFlag;
         }
 
+        /// <summary>
+        /// Sets the units task.  Pass null to cancel the current task.
+        /// </summary>
         public void setTask(ITask task) {
             this.task = task;
         }
@@ -70,6 +85,30 @@ namespace src.troop {
 
         public override float getSizeRadius() {
             return 0.65f;
+        }
+
+        public override int getMaxHealth() {
+            return this.getData().getHealth();
+        }
+
+        public override float getHealthBarHeight() {
+            return 1.5f;
+        }
+
+        public override void readFromNbt(NbtCompound tag) {
+            base.readFromNbt(tag);
+
+            this.lastPos = tag.getVector3("lastPos");
+            this.unitStats.readFromNbt(tag);
+        }
+
+        public override NbtCompound writeToNbt(NbtCompound tag) {
+            base.writeToNbt(tag);
+
+            tag.setTag("lastPos", this.lastPos);
+            this.unitStats.writeToNBT(tag);
+
+            return tag;
         }
     }
 

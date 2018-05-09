@@ -1,4 +1,7 @@
 ﻿using src.buildings;
+using src.map;
+using src.registry;
+using src.entity.unit;
 using src.util;
 using UnityEngine;
 
@@ -8,7 +11,7 @@ namespace src {
 
         private const float HEIGHT = 0.25f;
 
-        public static BuildOutline reference;
+        private static BuildOutline singleton;
 
         [SerializeField]
         private Material invalidMaterial;
@@ -16,43 +19,25 @@ namespace src {
         private Material validMaterial;
         private MeshRenderer meshRenderer;
 
-        private GameObject buildingPrefab;
+        private RegisteredObject buildingToPlace;
+        private UnitBuilder builder;
 
-        /// <summary>
-        /// Returns true if the build outline is disabled and normal clicking can be handled.
-        /// </summary>
-        public static bool isDisabled() {
-            return !BuildOutline.reference.gameObject.activeSelf;
+        public static BuildOutline instance() {
+            return BuildOutline.singleton;
         }
 
         private void Awake() {
-            BuildOutline.reference = this;
+            BuildOutline.singleton = this;
 
             this.meshRenderer = this.GetComponent<MeshRenderer>();
 
-            // Make sure its the right height.
+            // Make sure this object is at the right height.
             this.transform.position = new Vector3(this.transform.position.x, HEIGHT, this.transform.position.z);
 
             this.disableOutline();
         }
 
         private void Update() {
-            RaycastHit hit;
-
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
-                this.transform.position = new Vector3(hit.point.x, HEIGHT, hit.point.z);
-            }
-
-            if(Input.GetMouseButtonDown(0) && this.isSpaceFree()) {
-                // Create the new building.
-                BuildingBase newbuilding = GameObject.Instantiate(this.buildingPrefab, new Vector3(hit.point.x, 0, hit.point.z), Quaternion.identity).GetComponent<BuildingBase>();
-                newbuilding.setTeam(CameraMover.singleton.getTeam());
-                newbuilding.setHealth(1);
-                newbuilding.setConstructing();
-
-                this.disableOutline();
-            }
-
             // Update Color.
             if (this.isSpaceFree()) {
                 this.meshRenderer.material = this.validMaterial;
@@ -61,15 +46,57 @@ namespace src {
             }
         }
 
-        public void enableOutline(GameObject prefab) {
-            this.gameObject.SetActive(true);
-
-            this.buildingPrefab = prefab;
-
-            this.setSize(this.buildingPrefab.GetComponent<BuildingBase>());
+        /// <summary>
+        /// Returns true if the build outline is disabled and normal clicking can be handled.
+        /// </summary>
+        public bool isDisabled() {
+            return !BuildOutline.singleton.gameObject.activeSelf;
         }
 
-        private void disableOutline() {
+        public void processInput() {
+            RaycastHit hit;
+
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
+                this.transform.position = new Vector3(hit.point.x, HEIGHT, hit.point.z);
+            }
+
+            if (Input.GetMouseButtonDown(0) && this.isSpaceFree()) {
+                CameraMover cm = CameraMover.instance();
+
+                // Create the new building.                
+                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(hit.point.x, 0, hit.point.z), Quaternion.identity);
+                newBuilding.setTeam(cm.getTeam());
+                newBuilding.setHealth(1);
+                newBuilding.setConstructing();
+
+                // Remove resources.
+                cm.setResources(cm.getResources() - newBuilding.getData().getCost());
+                this.builder.setBuilding(newBuilding);
+
+                this.disableOutline();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape)) {
+                this.disableOutline();
+            }
+        }
+
+        /// <summary>
+        /// Called to enable the outline effect.
+        /// </summary>
+        public void enableOutline(RegisteredObject obj, UnitBuilder builder) {
+            this.gameObject.SetActive(true);
+
+            this.buildingToPlace = obj;
+            this.builder = builder;
+
+            this.setSize(this.buildingToPlace.getPrefab().GetComponent<BuildingBase>());
+        }
+
+        /// <summary>
+        /// Disables the outline effect.
+        /// </summary>
+        public void disableOutline() {
             this.gameObject.SetActive(false);
         }
 

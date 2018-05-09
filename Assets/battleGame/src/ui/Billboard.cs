@@ -2,12 +2,21 @@
 
 namespace src.ui {
 
+    /// <summary>
+    /// Rotates the object to face the camera at the end of every frame.
+    /// </summary>
     public class Billboard : MonoBehaviour {
 
+        /// <summary> Reference to the value of Camera.main </summary>
+        private Camera mainCamera;
+
+        private void Awake() {
+            this.mainCamera = Camera.main;
+        }
+
         private void LateUpdate() {
-            Transform t = Camera.main.transform;
-            this.transform.LookAt(t);
-            //this.transform.rotation = Quaternion.identity;// Quaternion.Euler(this.transform.eulerAngles.x, 90, this.transform.eulerAngles.z);
+            Vector3 worldPos = transform.position + this.mainCamera.transform.rotation * Vector3.forward;
+            this.transform.LookAt(worldPos, this.mainCamera.transform.rotation * Vector3.up);
         }
     }
 }

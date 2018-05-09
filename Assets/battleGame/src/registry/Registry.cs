@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace src.registry {
 
-    public abstract class RegistryBase {
+    public abstract class Registry {
+
+        public static BuildingRegistry buildingRegistry;
+        public static EntityRegistry entityRegistry;
 
         private const int REGISTRY_SIZE = 64;
 
@@ -14,7 +17,7 @@ namespace src.registry {
 
         private RegisteredObject[] objectRegistry;
 
-        public RegistryBase() {
+        public Registry() {
             this.objectRegistry = new RegisteredObject[REGISTRY_SIZE];
         }
 
@@ -43,16 +46,16 @@ namespace src.registry {
             return this.objectRegistry[id];
         }
 
-        protected abstract void initRegistry();
+        protected abstract Registry initRegistry();
 
         /// <summary>
         /// Initializes the registries if they haven't already been initialized.
         /// </summary>
         public static void registryBootstrap() {
-            if (!RegistryBase.ranBootstrap) {
-                new EntityRegistry().initRegistry();
-                new BuildingRegistry().initRegistry();
-                RegistryBase.ranBootstrap = true;
+            if (!Registry.ranBootstrap) {
+                Registry.entityRegistry = ((EntityRegistry) new EntityRegistry().initRegistry());
+                Registry.buildingRegistry = ((BuildingRegistry) new BuildingRegistry().initRegistry());
+                Registry.ranBootstrap = true;
             }
         }
     }

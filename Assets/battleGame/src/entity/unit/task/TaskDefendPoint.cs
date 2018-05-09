@@ -1,7 +1,7 @@
 ﻿using src.data;
 using UnityEngine;
 
-namespace src.troop.task {
+namespace src.entity.unit.task {
 
     public class TaskDefendPoint : TaskAttackNearby {
 
@@ -19,7 +19,7 @@ namespace src.troop.task {
             if (this.target != null && Vector2.Distance(this.defendPoint, this.target.transform.position) < RANGE) {
                 // Attack if we can reach the target.
                 if (this.attackCooldown <= 0 && this.canReach(this.target, this.target.getSizeRadius() + this.unit.getSizeRadius())) {
-                    this.target.damage(unit.getDamageDelt());
+                    this.target.damage(unit.getData().getDamageDelt());
                     this.attackCooldown = Constants.TROOP_ATTACK_RATE;
                 }
                 else {

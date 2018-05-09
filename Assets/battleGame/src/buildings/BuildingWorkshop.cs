@@ -6,7 +6,7 @@ namespace src.buildings {
     // builds special vehicles and weapons?
     public class BuildingWorkshop : BuildingBase {
 
-        public override BuildingData getBuildingData() {
+        public override BuildingData getData() {
             return Constants.BD_WORKSHOP;
         }
 

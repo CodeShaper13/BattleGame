@@ -1,11 +1,12 @@
-﻿using src.data;
+﻿using System;
+using src.data;
 using UnityEngine;
 
 namespace src.buildings {
 
     public class BuildingCamp : BuildingBase {
 
-        public override BuildingData getBuildingData() {
+        public override BuildingData getData() {
             return Constants.BD_CAMP;
         }
 

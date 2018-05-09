@@ -1,20 +1,20 @@
 ﻿using fNbt;
 using src.button;
+using src.util;
 
-namespace src {
+namespace src.entity {
 
     /// <summary>
     /// Represents an object that belongs to a certain side and has health.
     /// </summary>
-    public abstract class SidedObjectEntity : SidedObjectBase {
+    public abstract class SidedObjectEntity : SidedObjectBase, ILiving {
 
         private Health health;
 
-        protected override void onAwake() {
-            base.onAwake();
+        protected override void onStart() {
+            base.onStart();
 
-            this.health = this.GetComponentInChildren<Health>();
-            this.health.setMaxHealth(this.getMaxHealth());
+            this.health = Health.instantiateHealthbar(this.gameObject, this);
         }
 
         /// <summary>
@@ -46,13 +46,28 @@ namespace src {
             this.damage(2);
         }
 
+        /// <summary>
+        /// Returns the bitmask of what buttons to display.
+        /// </summary>
         public virtual int getButtonMask() {
             return ActionButton.destroy.mask;
         }
 
-        public abstract int getMaxHealth();
+        /// <summary>
+        /// Overried to stop the unit from allowing hte action buttons to be pressed
+        /// depending on the units state.
+        /// </summary>
+        public virtual bool enableActionButton() {
+            return true;
+        }
 
         public abstract float getSizeRadius();
+
+        public override void readFromNbt(NbtCompound tag) {
+            base.readFromNbt(tag);
+
+            this.setHealth(tag.getInt("health"));
+        }
 
         public override NbtCompound writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
@@ -61,5 +76,9 @@ namespace src {
 
             return tag;
         }
+
+        // From ILiving
+        public abstract int getMaxHealth();
+        public abstract float getHealthBarHeight();
     }
 }

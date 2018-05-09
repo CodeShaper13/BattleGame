@@ -1,8 +1,9 @@
 ﻿using src.buildings;
 using src.buildings.harvestable;
+using src.data;
 using UnityEngine;
 
-namespace src.troop.task.builder {
+namespace src.entity.unit.task.builder {
 
     public class TaskHarvestNearby : TaskBase<UnitBuilder> {
 
@@ -34,7 +35,7 @@ namespace src.troop.task.builder {
                         // Target was consumed.
                         this.target = null; 
                     }
-                    this.cooldown = 1f;
+                    this.cooldown = Constants.BUILDER_STRIKE_RATE;
                 }
             } else {
                 // Full, drop off resources.

@@ -1,4 +1,4 @@
-﻿namespace src.troop.task {
+﻿namespace src.entity.unit.task {
 
     public interface ITask {
         

@@ -1,8 +1,9 @@
 ﻿using fNbt;
 using src.map;
+using src.util;
 using UnityEngine;
 
-namespace src {
+namespace src.entity {
 
     public class MapObject : MonoBehaviour {
 
@@ -33,23 +34,21 @@ namespace src {
         protected virtual void onUpdate() { }
 
         /// <summary>
-        /// Writes the object to NBT and returns the tag.
-        /// </summary>
-        public virtual NbtCompound writeToNbt(NbtCompound tag) {
-            tag.Add(new NbtFloat("positionX", this.transform.position.x));
-            tag.Add(new NbtFloat("positionY", this.transform.position.y));
-            tag.Add(new NbtFloat("positionZ", this.transform.position.z));
-
-            tag.Add(new NbtFloat("rotationY", this.transform.eulerAngles.y));
-
-            return tag;
-        }
-
-        /// <summary>
         /// Reads the object from NBT and sets it's state.
         /// </summary>
         public virtual void readFromNbt(NbtCompound tag) {
+            this.transform.position = tag.getVector3("position");
+            this.transform.eulerAngles = tag.getVector3("eulerRotation");
+        }
 
+        /// <summary>
+        /// Writes the object to NBT and returns the tag.
+        /// </summary>
+        public virtual NbtCompound writeToNbt(NbtCompound tag) {
+            tag.setTag("position", this.transform.position);
+            tag.setTag("eulerRotation", this.transform.eulerAngles);
+
+            return tag;
         }
     }
 }

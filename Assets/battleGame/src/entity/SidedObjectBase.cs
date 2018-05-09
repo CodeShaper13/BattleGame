@@ -1,9 +1,8 @@
-﻿
-using src.team;
+﻿using src.team;
 using System;
 using UnityEngine;
 
-namespace src {
+namespace src.entity {
 
     /// <summary>
     /// Represents and object that belongs on a certain side.
@@ -13,6 +12,10 @@ namespace src {
         private Team team;
         [SerializeField] // Show in Inspector, but private so script won't change it.
         private EnumTeam objectTeam;
+
+        protected override void onAwake() {
+            base.onAwake();
+        }
 
         protected override void onStart() {
             base.onStart();
@@ -33,11 +36,14 @@ namespace src {
         }
 
         public void setTeam(Team newTeam) {
-            if(this.team != Team.NONE) {
+            if(!(this.team == null || this.team == Team.NONE)) {
                 throw new Exception("Can not change objects team!");
             }
 
-            this.team.leave(this);
+            if(this.team != null) {
+                this.team.leave(this);
+            }
+
             newTeam.join(this);
             this.team = newTeam;
         }

@@ -14,32 +14,31 @@
         public const int STOREROOM_RESOURCE_BOOST = 250;
 
         #region Units:
-        // Health
-        public const int HEALTH_BUILDER = 35;
-        public const int HEALTH_SOLDIER = 75;
-        public const int HEALTH_ARCHER = 50;
-        public const int HEALTH_HEAVY = 100;
+        public static readonly EntityData ED_BUILDER = new EntityData("Builder", 35, 25, 5);
+        public static readonly EntityData ED_SOLDIER = new EntityData("Soldier", 75, 25, 5);
+        public static readonly EntityData ED_ARCHER = new EntityData("Archer", 50, 25, 5);
+        public static readonly EntityData ED_HEAVY = new EntityData("Heavy", 100, 25, 5);
+
         // Builder
         public const int BUILDER_MAX_CARRY = 500;
         public const int BUILDER_COLLECT_PER_STRIKE = 25;
+        public const float BUILDER_STRIKE_RATE = 1f;
 
         public const float TROOP_ATTACK_RATE = 1; // Seconds between attacks.
         #endregion
 
-        public const int DAMAGE_BUILDER = 5;
-        public const int DAMAGE_SOLDIER = 5;
-        public const int DAMAGE_ARCHER = 5; // Bow damage
-        public const int DAMAGE_HEAVY = 5;
-
         #region Buildings:
-        public static readonly BuildingData BD_CAMP = new BuildingData(250, 100);
-        public static readonly BuildingData BD_WORKSHOP = new BuildingData(250, 350);
-        public static readonly BuildingData BD_TRAINING_HOUSE = new BuildingData(250, 200);
-        public static readonly BuildingData BD_STOREROOM = new BuildingData(250, 250);
-        public static readonly BuildingData BD_TOWER = new BuildingData(250, 250);
-        public static readonly BuildingData BD_WALL = new BuildingData(500, 150);
+        public static readonly BuildingData BD_CAMP = new BuildingData("Camp", 250, 100);
+        public static readonly BuildingData BD_WORKSHOP = new BuildingData("Workshop", 250, 350);
+        public static readonly BuildingData BD_TRAINING_HOUSE = new BuildingData("Training House", 250, 200);
+        public static readonly BuildingData BD_STOREROOM = new BuildingData("Store Room", 250, 250);
+        public static readonly BuildingData BD_TOWER = new BuildingData("Tower", 250, 250);
+        public static readonly BuildingData BD_WALL = new BuildingData("Wall", 500, 150);
 
         public const int CONSTRUCT_RATE = 10;
+
+        public const int TRAINING_CAMP_QUEUE_SIZE = 5;
+        public const float TIME_TO_TRAIN = 2.5f;
         #endregion
     }
 }

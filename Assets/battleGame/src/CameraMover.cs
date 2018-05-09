@@ -1,15 +1,18 @@
 ﻿using src.buildings;
-using src.troop;
+using src.entity.unit;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using src.data;
+using src.entity;
 
 namespace src {
 
     public class CameraMover : SidedObjectBase {
 
-        public static CameraMover singleton;
+        private static CameraMover singleton;
+
+        private bool isPaused;
 
         // Object references;
         public Text resourceText;
@@ -24,8 +27,12 @@ namespace src {
 
         private int resources;
 
-        [HideInInspector]
+        //[HideInInspector]
         public BuildingBase selectedBuilding;
+
+        public static CameraMover instance() {
+            return CameraMover.singleton;
+        }
 
         protected override void onAwake() {
             CameraMover.singleton = this;
@@ -44,38 +51,63 @@ namespace src {
         protected override void onUpdate() {
             base.onUpdate();
 
-            float forwardSpeed = Input.GetAxis("Horizontal") * this.sensitivity;
-            float sideSpeed = Input.GetAxis("Vertical") * this.sensitivity;
+            Main main = Main.instance();
 
-            this.transform.transform.position += new Vector3(forwardSpeed, 0, sideSpeed);
+            if(main.isPaused()) {
+                if(Input.GetKeyDown(KeyCode.Escape)) {
+                    main.resumeGame();
+                }
+            } else {
+                // Not paused.
+                if (Input.GetKeyDown(KeyCode.Escape)) {
+                    if (BuildOutline.instance().isDisabled()) {
+                        this.actionButtons.closePopupButtons();
+                        main.pauseGame();
+                    } else {
+                        BuildOutline.instance().disableOutline();
+                    }
+                } else {
+                    float forwardSpeed = Input.GetAxis("Horizontal") * this.sensitivity;
+                    float sideSpeed = Input.GetAxis("Vertical") * this.sensitivity;
 
-            // Clicking.
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject() && BuildOutline.isDisabled()) {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
+                    this.transform.transform.position += new Vector3(forwardSpeed, 0, sideSpeed);
 
-                if (Physics.Raycast(ray, out hit, 1000)) {
-                    SidedObjectEntity soe = hit.transform.gameObject.GetComponent<SidedObjectEntity>();
-                    if (soe != null && soe.getTeam() == this.getTeam()) {
+                    if(BuildOutline.instance().isDisabled()) {
+                        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) {
+                            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                            RaycastHit hit;
 
-                        if(soe is UnitBase) {
-                            bool flag = this.party.tryAdd((UnitBase)soe);
-                        } else if(soe is BuildingBase) {
-                            this.party.disband();
-                            this.selectedBuilding = (BuildingBase)soe;
-                        } else {
-                            print("Error?  " + soe.gameObject.name);
+                            if (Physics.Raycast(ray, out hit, float.PositiveInfinity)) {
+                                SidedObjectEntity entity = hit.transform.gameObject.GetComponent<SidedObjectEntity>();
+                                if (entity != null && entity.getTeam() == this.getTeam()) {
+                                    if (entity is UnitBase) {
+                                        this.selectedBuilding = null;
+                                        bool flag = this.party.tryAdd((UnitBase)entity);
+                                    }
+                                    else if (entity is BuildingBase) {
+                                        this.party.disband();
+                                        this.selectedBuilding = (BuildingBase)entity;
+                                    }
+                                    else {
+                                        print("Error?  " + entity.gameObject.name);
+                                    }
+
+                                    //soe.onClick(this);
+
+                                    this.actionButtons.updateButtons();
+                                }
+                                else if (hit.transform.name == "Ground") {
+                                    this.actionButtons.closePopupButtons();
+                                    this.party.moveAllTo(hit.point);
+                                }
+                            }
                         }
-
-                        //soe.onClick(this);
-
-                        this.actionButtons.updateButtons();
-                    } else if(hit.transform.name == "Ground") {
-                        this.party.moveAllTo(hit.point);
+                    } else {
+                        // Build outline specific input.
+                        BuildOutline.instance().processInput();
                     }
                 }
             }
-
             this.updateCount();
         }
 
@@ -115,10 +147,17 @@ namespace src {
         }
 
         /// <summary>
-        /// Sets the players resources, clamping it between 0 and the maximum number the player can have.  Any overflow is discarded.
+        /// Sets the player's resources, clamping it between 0 and the maximum number the player can have.  Any overflow is discarded.
         /// </summary>
         public void setResources(int amount) {
-            this.resources = Mathf.Clamp(this.resources + amount, 0, this.getMaxResourceCount());
+            this.resources = Mathf.Clamp(amount, 0, this.getMaxResourceCount());
+        }
+
+        /// <summary>
+        /// Reduces the player's resources by the passed amount.
+        /// </summary>
+        public void reduceResources(int amount) {
+            this.setResources(this.resources - amount);
         }
 
         /// <summary>
@@ -141,7 +180,10 @@ namespace src {
             int i = Constants.DEFAULT_TROOP_CAP;
             foreach(SidedObjectBase o in this.getTeam().getMembers()) {
                 if(o is BuildingCamp) {
-                    i += Constants.CAMP_TROOP_BOOST;
+                    BuildingCamp camp = (BuildingCamp)o;
+                    if(!camp.isConstructing) {
+                        i += Constants.CAMP_TROOP_BOOST;
+                    }
                 }
             }
             return i;

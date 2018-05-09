@@ -1,7 +1,10 @@
-﻿using src.troop;
-using src.troop.task;
-using src.troop.task.builder;
+﻿using src.registry;
+using src.entity.unit;
+using src.entity.unit.task;
+using src.entity.unit.task.builder;
 using System;
+using src.entity;
+using UnityEngine;
 
 namespace src.button {
 
@@ -19,12 +22,12 @@ namespace src.button {
         });
 
         public static readonly ActionButton builderBuild = new ActionButtonParent("Build", 1,
-            new ActionButtonBuild("Camp", References.list.buildingCamp),
-            new ActionButtonBuild("Workshop", References.list.buildingWorkshop),
-            new ActionButtonBuild("Training House", References.list.buildingTrainingHouse),
-            new ActionButtonBuild("Storeroom", References.list.buildingStoreroom),
-            new ActionButtonBuild("Tower", References.list.buildingTower),
-            new ActionButtonBuild("Wall", References.list.buldingWall));
+            new ActionButtonBuild("Camp", BuildingRegistry.buildingCamp),
+            new ActionButtonBuild("Workshop", BuildingRegistry.buildingWorkshop),
+            new ActionButtonBuild("Training House", BuildingRegistry.buildingTrainingHouse),
+            new ActionButtonBuild("Storeroom", BuildingRegistry.buildingStoreroom),
+            new ActionButtonBuild("Tower", BuildingRegistry.buildingTower),
+            new ActionButtonBuild("Wall", BuildingRegistry.buldingWall));
 
 
         public static readonly ActionButton harvestResources = new ActionButton("Harvest", 2, (unit) => {
@@ -51,21 +54,27 @@ namespace src.button {
         public static readonly ActionButton upgrade = new ActionButton("Upgrade", 16);
 
         public static readonly ActionButton train = new ActionButtonParent("Train", 17,
-            new ActionButton("Train Soldier", 24),
-            new ActionButton("Train Archer", 25),
-            new ActionButton("Train Heavy", 26),
-            new ActionButton("Train Builder", 27));
+            new ActionButtonTrain(EntityRegistry.unitSoldier),
+            new ActionButtonTrain(EntityRegistry.unitArcher),
+            new ActionButtonTrain(EntityRegistry.unitHeavy),
+            new ActionButtonTrain(EntityRegistry.unitBuilder));
 
 
+        /// <summary> The function that is run when the button is clicked. </summary>
         public Action<SidedObjectEntity> function;
         public readonly int mask;
 
         private readonly int id;
-        private readonly string name;
+        private readonly string displayName;
 
-        public ActionButton(string actionName, int id) {
-            this.name = actionName;
+        public ActionButton(string actionName, int id) :  this(actionName, id, (unit) => { Debug.Log("Default Callback"); }) { }
+
+        public ActionButton(string actionName, Action<SidedObjectEntity> action) : this(actionName, -1, action) { }
+
+        public ActionButton(string actionName, int id, Action<SidedObjectEntity> action) {
+            this.displayName = actionName;
             this.id = id;
+            this.function = action;
             this.mask = (1 << this.id);
 
             if (id >= 0) {
@@ -73,18 +82,12 @@ namespace src.button {
             }
         }
 
-        public ActionButton(string actionName, Action<SidedObjectEntity> action) : this(actionName, -1, action) { }
-
-        public ActionButton(string actionName, int id, Action<SidedObjectEntity> action) : this(actionName, id) {
-            this.function = action;
-        }
-
         /// <summary>
         /// Returns the text to display on the button.
         /// </summary>
         /// <returns></returns>
-        public string getText() {
-            return this.name;
+        public virtual string getText() {
+            return this.displayName;
         }
     }
 }

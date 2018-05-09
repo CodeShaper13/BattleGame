@@ -23,6 +23,9 @@ namespace src {
         /// <summary> Saves what button was clicked when dealing with sub buttons. </summary>
         private int selectedMainButtonIndex = -1;
 
+        /// <summary> Stores </summary>
+        private bool flag;
+
         private void Awake() {
             this.cameraMover = this.GetComponentInParent<CameraMover>();
             
@@ -31,6 +34,10 @@ namespace src {
 
             this.buttonObjs = this.makeButtons(this.transform, false);
             this.subButtonsObj = this.makeButtons(this.subButtonCanvas, true);
+        }
+
+        private void Update() {
+            //TODO flag
         }
 
         public void updateButtons() {
@@ -56,14 +63,25 @@ namespace src {
             }
         }
 
+        public void closePopupButtons() {
+            for (int i = 0; i < MAX_BUTTONS; i++) {
+                // Enable the main buttons.
+                this.buttonObjs[i].button.interactable = true;
+
+                // Hide sub buttons.
+                this.subButtonsObj[i].setActive(false);
+            }
+
+            this.popupShown = false;
+        }
+
         /// <summary>
         /// Returns the button bit mask to use based on the selected object(s).
         /// </summary>
         private int getMask() {
             if(this.cameraMover.selectedBuilding != null) {
                 return this.cameraMover.selectedBuilding.getButtonMask();
-            }
-            else {
+            } else {
                 return this.cameraMover.party.getPartyMask();
             }
         }
@@ -72,7 +90,7 @@ namespace src {
             if(!isSubButton) {
                 ActionButton ab = this.actionButtons[index];
                 if (ab is ActionButtonParent) {
-                    // Clicked on a button conatining sub buttons.
+                    // Clicked on a parent button conatining sub buttons.
                     ActionButtonParent b = (ActionButtonParent)ab;
 
                     // Disable all the main buttons except for the selected one.
@@ -105,21 +123,16 @@ namespace src {
             } else {
                 // Clicked on a sub button.
                 ActionButton[] subButtons = ((ActionButtonParent)this.actionButtons[this.selectedMainButtonIndex]).getSubButtons();
-
-                for (int i = 0; i < MAX_BUTTONS; i++) {
-                    // Enable the main buttons.
-                    this.buttonObjs[i].button.interactable = true;
-
-                    // Hide sub buttons.
-                    this.subButtonsObj[i].setActive(false);
-                }
-
+                this.closePopupButtons();                
                 this.callFunctionOnSelected(subButtons[index]);
             }
 
             this.updateButtons();
         }
 
+        /// <summary>
+        /// Calls the function of the passed ActionButton on whatever it is that is selected (troop or building).
+        /// </summary>
         private void callFunctionOnSelected(ActionButton ab) {
             if (this.cameraMover.selectedBuilding != null) {
                 ab.function(this.cameraMover.selectedBuilding);
