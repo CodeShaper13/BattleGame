@@ -14,25 +14,25 @@ namespace src.button {
 
         public static readonly ActionButton[] buttonList = new ActionButton[64];
 
-        /// <summary>
-        /// Destroys the Unit, removing it from the game.
-        /// </summary>
-        public static readonly ActionButton destroy = new ActionButton("Destroy Unit", 0, (unit) => {
-            unit.damage(int.MaxValue);
-        });
+        /// <summary> Destroys the Unit, removing it from the game. </summary>
+        public static readonly ActionButton destroy = new ActionButtonParent("Destroy Unit", 0,
+            new ActionButton("Confirm", 0, (unit) => { unit.damage(int.MaxValue); }));
 
         public static readonly ActionButton builderBuild = new ActionButtonParent("Build", 1,
-            new ActionButtonBuild("Camp", BuildingRegistry.buildingCamp),
-            new ActionButtonBuild("Workshop", BuildingRegistry.buildingWorkshop),
-            new ActionButtonBuild("Training House", BuildingRegistry.buildingTrainingHouse),
-            new ActionButtonBuild("Storeroom", BuildingRegistry.buildingStoreroom),
-            new ActionButtonBuild("Tower", BuildingRegistry.buildingTower),
-            new ActionButtonBuild("Wall", BuildingRegistry.buldingWall));
+            new ActionButtonBuild("Camp", Registry.buildingCamp),
+            new ActionButtonBuild("Workshop", Registry.buildingWorkshop),
+            new ActionButtonBuild("Training House", Registry.buildingTrainingHouse),
+            new ActionButtonBuild("Storeroom", Registry.buildingStoreroom),
+            new ActionButtonBuild("Tower", Registry.buildingTower),
+            new ActionButtonBuild("Wall", Registry.buldingWall));
 
-
+        // Builder specific.
         public static readonly ActionButton harvestResources = new ActionButton("Harvest", 2, (unit) => {
             UnitBuilder ub = ((UnitBuilder)unit);
             ub.setTask(new TaskHarvestNearby(ub));
+        });
+        public static readonly ActionButton repairBuilder = new ActionButton("Repair Buildin", 3, (unit) => {
+            UnitBuilder ub = ((UnitBuilder)unit);
         });
 
         // Fighting troop attacks.
@@ -54,10 +54,10 @@ namespace src.button {
         public static readonly ActionButton upgrade = new ActionButton("Upgrade", 16);
 
         public static readonly ActionButton train = new ActionButtonParent("Train", 17,
-            new ActionButtonTrain(EntityRegistry.unitSoldier),
-            new ActionButtonTrain(EntityRegistry.unitArcher),
-            new ActionButtonTrain(EntityRegistry.unitHeavy),
-            new ActionButtonTrain(EntityRegistry.unitBuilder));
+            new ActionButtonTrain(Registry.unitSoldier),
+            new ActionButtonTrain(Registry.unitArcher),
+            new ActionButtonTrain(Registry.unitHeavy),
+            new ActionButtonTrain(Registry.unitBuilder));
 
 
         /// <summary> The function that is run when the button is clicked. </summary>

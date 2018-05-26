@@ -11,5 +11,6 @@
 
         // Defined
         public const int GEOMETRY = (1 << 9);
+        public const int WALL = (1 << 9);
     }
 }

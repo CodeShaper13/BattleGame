@@ -39,7 +39,17 @@ namespace src.entity.unit.task.builder {
                 }
             } else {
                 // Full, drop off resources.
-                
+                if(this.dropoffPoint == null) {
+                    // find a drop off point.
+                    this.dropoffPoint = this.findEntityOfType<BuildingStoreroom>(this.unit.getPos(), -1, false);
+
+                    if (this.dropoffPoint == null) {
+                        // No drop off point, stop executing, as we can't drop off what we have.
+                        return false;
+                    } else {
+                       // this.setDestination
+                    }
+                }                
             }
 
             return true;

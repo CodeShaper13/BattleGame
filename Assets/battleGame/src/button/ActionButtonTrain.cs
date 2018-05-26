@@ -19,8 +19,7 @@ namespace src.button {
 
                 if(added) {
                     // Remove resources
-                    CameraMover cm = CameraMover.instance();
-                    cm.reduceResources(data.getCost());
+                    trainingHouse.getTeam().reduceResources(data.getCost());
                 }
             };
         }

@@ -1,5 +1,4 @@
 ﻿using src.data;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace src.entity.unit.task {
@@ -12,18 +11,15 @@ namespace src.entity.unit.task {
         protected float attackCooldown;
 
         public TaskAttackNearby(UnitFighting unit) : base(unit) {
-            this.target = this.getClosestEnemy(RANGE);
+            this.target = this.findEntityOfType<SidedObjectEntity>(RANGE);
         }
 
         public override bool preform() {
             this.attackCooldown -= Time.deltaTime;
 
-            List<UnitBuilder> list = new List<UnitBuilder>();
-            list.Add(null);
-
             if (this.findTarget()) {
                 if(this.attackCooldown <= 0 && this.canReach(this.target, this.target.getSizeRadius() + this.unit.getSizeRadius())) {
-                    this.target.damage(unit.getData().getDamageDelt());
+                    this.unit.damageTarget(this.target);
                     this.attackCooldown = Constants.TROOP_ATTACK_RATE;
                 } else {
                     this.setDestination(this.target);
@@ -38,7 +34,7 @@ namespace src.entity.unit.task {
         /// </summary>
         protected bool findTarget() {
             if (this.target == null || !this.canReach(this.target, RANGE)) {
-                this.target = this.getClosestEnemy(RANGE);
+                this.target = this.findEntityOfType<SidedObjectEntity>(RANGE);
             }
 
             return this.target != null;

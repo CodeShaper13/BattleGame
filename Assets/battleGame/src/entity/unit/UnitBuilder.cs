@@ -8,8 +8,7 @@ namespace src.entity.unit {
 
     public class UnitBuilder : UnitBase<UnitBuilder> {
 
-        public int resources;
-
+        private int resources;
         private BuildingBase building;
 
         /// <summary>
@@ -30,6 +29,18 @@ namespace src.entity.unit {
             return this.resources < Constants.BUILDER_MAX_CARRY;
         }
 
+        public int getResources() {
+            return this.resources;
+        }
+
+        public void increaseResources(int amount) {
+            // TEMP resources are deposited directly into the general bank.
+            //this.resources += amount;
+            this.getTeam().increaseResources(amount);
+
+            this.unitStats.resourcesCollected.increase(amount);
+        }
+
         public override EntityData getData() {
             return Constants.ED_BUILDER;
         }
@@ -46,7 +57,10 @@ namespace src.entity.unit {
             this.building = building;
             this.setTask(null);
             this.setDestination(building.transform.position);
+
+            this.unitStats.buildingsBuilt.increase();
         }
+
 
         public override void readFromNbt(NbtCompound tag) {
             base.readFromNbt(tag);
@@ -54,12 +68,10 @@ namespace src.entity.unit {
             this.resources = tag.getInt("builderResources");
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.setTag("builderResources", this.resources);
-
-            return tag;
         }
     }
 }

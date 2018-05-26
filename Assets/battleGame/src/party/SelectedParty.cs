@@ -2,11 +2,10 @@
 using src.ui;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using System;
 using src.entity;
 
-namespace src {
+namespace src.party {
 
     public class SelectedParty : MonoBehaviour {
 
@@ -14,14 +13,14 @@ namespace src {
 
         public GameObject buttonPrefab;
 
-        [SerializeField] // For debugging in inspector?
+        [SerializeField] // For debugging in inspector
         private List<UnitBase> units;
         private CameraMover cameraMover;
-        private Text[] buttonText;
+        private PartyButton[] partyButtons;
 
         private void Awake() {
             this.units = new List<UnitBase>();
-            this.buttonText = new Text[PARTY_SIZE];
+            this.partyButtons = new PartyButton[PARTY_SIZE];
 
             for(int i = 0; i < PARTY_SIZE; i++) {
                 GameObject btn = GameObject.Instantiate(this.buttonPrefab, this.transform);
@@ -31,26 +30,7 @@ namespace src {
                 PartyButton pb = btn.GetComponent<PartyButton>();
                 pb.setIndex(i);
 
-                //Button b = btn.GetComponent<Button>();
-                //int j = i;
-                //b.onClick.AddListener(() => { this.buttonCallback(j); });
-
-                this.buttonText[i] = btn.GetComponentInChildren<Text>();
-            }
-
-            // Sets button text.
-            this.disband();
-        }
-
-        private void Update() {
-            for (int i = 0; i < PARTY_SIZE; i++) {
-                UnitBase unit = this.get(i);
-                if(unit != null) {
-                    string s = unit.getHealth() + "/" + unit.getMaxHealth();
-                    this.buttonText[i].text = unit.getData().getName() + "\n" + s;
-                } else {
-                    this.buttonText[i].text = "...";
-                }
+                this.partyButtons[i] = pb;
             }
         }
 
@@ -58,6 +38,10 @@ namespace src {
             this.cameraMover = c;
         }
 
+        /// <summary>
+        /// Returns the mask of hte whole party by &ing all of the individual masks.
+        /// </summary>
+        /// <returns></returns>
         public int getPartyMask() {
             if(this.units.Count == 0) {
                 return 0;
@@ -70,6 +54,10 @@ namespace src {
             return mask;
         }
 
+        /// <summary>
+        /// Moves all members of the party to the same point.
+        /// </summary>
+        /// <param name="point"></param>
         public void moveAllTo(Vector3 point) {
             foreach (UnitBase u in this.units) {
                 u.setDestination(point);
@@ -102,10 +90,14 @@ namespace src {
         }
 
         /// <summary>
-        /// Removes the passed unit from the party.
+        /// Removes the passed unit from the party if it is in the party.
         /// </summary>
         public void remove(UnitBase unit) {
-            this.units.Remove(unit);
+            int index = this.units.IndexOf(unit);
+            if(index != -1) {
+                this.partyButtons[index].setUnit(null);
+                this.units.RemoveAt(index);
+            }
         }
 
         /// <summary>
@@ -113,6 +105,9 @@ namespace src {
         /// </summary>
         public void disband() {
             this.units.Clear();
+            foreach(PartyButton pb in this.partyButtons) {
+                pb.setUnit(null);
+            }
         }
 
         /// <summary>
@@ -122,6 +117,7 @@ namespace src {
         public bool tryAdd(UnitBase unit) {
             if(!this.isFull() && !this.units.Contains(unit)) {
                 this.units.Add(unit);
+                this.partyButtons[this.units.Count - 1].setUnit(unit);
                 return true;
             } else {
                 return false;

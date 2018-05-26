@@ -1,5 +1,6 @@
 ﻿using fNbt;
 using src.button;
+using src.registry;
 using src.util;
 
 namespace src.entity {
@@ -11,8 +12,8 @@ namespace src.entity {
 
         private Health health;
 
-        protected override void onStart() {
-            base.onStart();
+        protected override void onAwake() {
+            base.onAwake();
 
             this.health = Health.instantiateHealthbar(this.gameObject, this);
         }
@@ -24,11 +25,18 @@ namespace src.entity {
             return this.health.getHealth();
         }
 
+        /// <summary>
+        /// Should not be used to "damage" an object, as it does not record
+        /// the damage to the stat list.
+        /// </summary>
         public void setHealth(int amount) {
             this.health.setHealth(amount);
         }
 
-        public bool damage(int amount) {
+        /// <summary>
+        /// Damages the Entity, returning true if the Entity was killed, false if it is still alive.
+        /// </summary>
+        public virtual bool damage(int amount) {
             if(this.health.setHealth(this.health.getHealth() - amount)) {
                 this.getTeam().leave(this);
                 this.onDeathCallback();
@@ -66,15 +74,15 @@ namespace src.entity {
         public override void readFromNbt(NbtCompound tag) {
             base.readFromNbt(tag);
 
+            // Do not read id tag.
             this.setHealth(tag.getInt("health"));
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
-            tag.Add(new NbtInt("health", this.getHealth()));
-
-            return tag;
+            tag.setTag("id", Registry.getIdFromObject(this));
+            tag.setTag("health", this.getHealth());
         }
 
         // From ILiving

@@ -1,6 +1,7 @@
 ﻿using fNbt;
+using src.buildings;
 using src.data;
-using src.entity.unit.statistics;
+using src.entity.unit.stats;
 using src.entity.unit.task;
 using src.util;
 using UnityEngine;
@@ -14,12 +15,13 @@ namespace src.entity.unit {
         private NavMeshAgent agent;
         private ITask task;
 
-        private Stats unitStats;
+        public UnitStats unitStats;
         private Vector3 lastPos;
 
         protected override void onAwake() {
             base.onAwake();
             this.agent = this.GetComponent<NavMeshAgent>();
+            this.unitStats = new UnitStats();
             this.lastPos = this.transform.position;
         }
 
@@ -32,16 +34,29 @@ namespace src.entity.unit {
                 }
             }
 
-            // Update Distance Moved stat.
+            // Update stats.
             if(this.transform.position != this.lastPos) {
                 this.unitStats.distanceWalked.increase(Vector3.Distance(this.transform.position, this.lastPos));
             }
             this.lastPos = this.transform.position;
+
+            this.unitStats.timeAlive.increase(Time.deltaTime);
+        }
+
+        public override bool damage(int amount) {
+            this.unitStats.damageTaken.increase(amount);
+            return base.damage(amount);
         }
 
         public override void onDeathCallback() {
             base.onDeathCallback();
-            CameraMover.instance().party.remove(this);
+
+            // Hacky way to remove unit from the party.
+            CameraMover cm = CameraMover.instance();
+            if(cm.getTeam() == this.getTeam()) {
+                cm.party.remove(this);
+            }
+
             GameObject.Destroy(this.gameObject);
         }
 
@@ -77,7 +92,7 @@ namespace src.entity.unit {
         }
 
         /// <summary>
-        /// Returns the Unit's current task.
+        /// Returns the Unit's current task, or null if it has none.
         /// </summary>
         public ITask getTask() {
             return this.task;
@@ -102,13 +117,29 @@ namespace src.entity.unit {
             this.unitStats.readFromNbt(tag);
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.setTag("lastPos", this.lastPos);
             this.unitStats.writeToNBT(tag);
+        }
 
-            return tag;
+        /// <summary>
+        /// Damages the passed object, increasing stats if needed.
+        /// </summary>
+        /// <param name="obj"></param>
+        public void damageTarget(SidedObjectEntity obj) {
+            int damage = this.getData().getDamageDelt();
+            this.unitStats.damageDelt.increase(damage);
+
+            if(obj.damage(damage)) {
+                // obj was killed.
+                if (obj is BuildingBase) {
+                    this.unitStats.buildingsDestroyed.increase();
+                } else if (obj is UnitBase) {
+                    this.unitStats.unitsKilled.increase();
+                }
+            }
         }
     }
 

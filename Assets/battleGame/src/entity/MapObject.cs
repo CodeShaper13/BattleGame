@@ -29,7 +29,11 @@ namespace src.entity {
 
         protected virtual void onAwake() { }
 
-        protected virtual void onStart() { }
+        protected virtual void onStart() {
+
+        }
+
+        public virtual void onConstruct() { }
 
         protected virtual void onUpdate() { }
 
@@ -44,11 +48,9 @@ namespace src.entity {
         /// <summary>
         /// Writes the object to NBT and returns the tag.
         /// </summary>
-        public virtual NbtCompound writeToNbt(NbtCompound tag) {
+        public virtual void writeToNbt(NbtCompound tag) {
             tag.setTag("position", this.transform.position);
             tag.setTag("eulerRotation", this.transform.eulerAngles);
-
-            return tag;
         }
     }
 }

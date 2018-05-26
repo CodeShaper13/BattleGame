@@ -61,10 +61,6 @@ namespace src.buildings {
             return this.getData().getMaxHealth();
         }
 
-        public override float getHealthBarHeight() {
-            return 2f;
-        }
-
         public int getCost() {
             return this.getData().getCost();
         }
@@ -76,13 +72,11 @@ namespace src.buildings {
             this.buildProgress = tag.getFloat("progress");
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.setTag("isBuilding", this.isConstructing ? (byte)1 : (byte)0);
             tag.setTag("progress", this.buildProgress);
-
-            return tag;
         }
     }
 }

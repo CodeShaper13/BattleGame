@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff26db721962cdf4a8edcdfa9a767d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  profile: {fileID: 0}
+  profile: {fileID: 11400000, guid: 9e2f015e5f2ddae41b95e6c43c0ea3db, type: 2}
 --- !u!114 &114123521837196216
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -424,8 +424,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e78d67c0495d1cc4892886454fa41457, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buttonPrefab: {fileID: 0}
-  cameraMover: {fileID: 0}
+  buttonPrefab: {fileID: 1715429229124822, guid: 15e635f5a2e02a242a78d9f7648953d4,
+    type: 2}
 --- !u!114 &114728716165092836
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -437,7 +437,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 741df65d00fd56646b4bae00d55e5f82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buttonPrefab: {fileID: 0}
+  buttonPrefab: {fileID: 1089289055365666, guid: 9d5d4e5ef37bc0b4083b8a5c100413f8,
+    type: 2}
   units: []
 --- !u!114 &114967151342438588
 MonoBehaviour:
@@ -588,9 +589,9 @@ RectTransform:
   m_Father: {fileID: 224839565339780312}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 503.5, y: 219}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -80, y: -45}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224095641645402274
@@ -643,9 +644,9 @@ RectTransform:
   m_Father: {fileID: 224839565339780312}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 503.5, y: 249}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -80, y: -15}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224839565339780312

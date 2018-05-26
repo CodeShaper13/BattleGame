@@ -1,4 +1,5 @@
-﻿using src.team;
+﻿using src.buildings;
+using src.team;
 using UnityEngine;
 
 namespace src.entity.unit.task {
@@ -17,30 +18,31 @@ namespace src.entity.unit.task {
         /// <summary>
         /// Returns the closest enemy object to this unit, or null if there are none.
         /// </summary>
-        protected SidedObjectEntity getClosestEnemy(float maxDistance) {
-            return this.getClosestEnemy(maxDistance, this.unit.transform.position);
+        protected T findEntityOfType<T>(float maxDistance) where T : SidedObjectEntity {
+            return this.findEntityOfType<T>(this.unit.getPos(), maxDistance);
         }
 
         /// <summary>
         /// Returns the closest enemy object, or null if there are none.
         /// </summary>
-        protected SidedObjectEntity getClosestEnemy(float maxDistance, Vector3 point) {
-            SidedObjectEntity obj = null;
+        protected T findEntityOfType<T>(Vector3 point, float maxDistance = -1, bool findEnemies = true) where T : SidedObjectEntity {
+            SidedObjectBase obj = null;
             float f = float.PositiveInfinity;
+            Team thisTeam = this.unit.getTeam();
             foreach (Team t in Team.ALL_TEAMS) {
-                if(t != this.unit.getTeam()) {
-                    foreach(SidedObjectBase s in t.getMembers()) {
-                        if(s is SidedObjectEntity) {
+                if (findEnemies ? t != thisTeam : t == thisTeam) {
+                    foreach (SidedObjectBase s in t.getMembers()) {
+                        if (s is T) {
                             float dis = Vector3.Distance(this.unit.transform.position, s.transform.position);
-                            if ((dis < f) && (dis < maxDistance)) {
-                                obj = (SidedObjectEntity)s;
+                            if ((dis < f) && (maxDistance == -1 || dis < maxDistance)) {
+                                obj = s;
                                 f = dis;
                             }
                         }
                     }
                 }
             }
-            return obj;
+            return (T)obj;
         }
 
         protected void setDestination(SidedObjectEntity target) {

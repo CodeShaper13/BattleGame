@@ -13,6 +13,8 @@
         public const int DEFAUT_RESOURCE_CAP = 500;
         public const int STOREROOM_RESOURCE_BOOST = 250;
 
+        public const float PRODUCER_RATE = 0.1f;
+
         #region Units:
         public static readonly EntityData ED_BUILDER = new EntityData("Builder", 35, 25, 5);
         public static readonly EntityData ED_SOLDIER = new EntityData("Soldier", 75, 25, 5);
@@ -29,6 +31,7 @@
 
         #region Buildings:
         public static readonly BuildingData BD_CAMP = new BuildingData("Camp", 250, 100);
+        public static readonly BuildingData BD_PRODUCER = new BuildingData("Producer", 250, 200);
         public static readonly BuildingData BD_WORKSHOP = new BuildingData("Workshop", 250, 350);
         public static readonly BuildingData BD_TRAINING_HOUSE = new BuildingData("Training House", 250, 200);
         public static readonly BuildingData BD_STOREROOM = new BuildingData("Store Room", 250, 250);

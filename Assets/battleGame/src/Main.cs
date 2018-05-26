@@ -1,17 +1,17 @@
-﻿using src.gui;
+﻿using src.entity.unit.stats;
+using src.gui;
+using src.registry;
 using UnityEngine;
 
 namespace src {
+
+    // Note, set in Project Settings to run first.
 
     public class Main : MonoBehaviour {
 
         private static Main singleton;
 
         private bool paused;
-
-        [SerializeField]
-        private GuiPauseScreen pauseScreen;
-
 
         public static Main instance() {
             return Main.singleton;
@@ -20,7 +20,15 @@ namespace src {
         private void Awake() {
             if (Main.singleton == null) {
                 Main.singleton = this;
-            } else if (singleton != this) {
+
+                References.list = GameObject.FindObjectOfType<References>();
+
+                // Preform bootstrap
+                Registry.registryBootstrap();
+                GuiManager.guiBootstrap();
+                Names.bootstrap();
+            }
+            else if (singleton != this) {
                 GameObject.Destroy(this.gameObject);
                 return;
             }
@@ -41,14 +49,14 @@ namespace src {
         public void pauseGame() {
             this.paused = true;
             Time.timeScale = 0;
-            this.pauseScreen.enabeScreen();
+            GuiManager.openGui(GuiManager.paused);
         }
 
         /// <summary>
         /// Resumes the game.
         /// </summary>
         public void resumeGame() {
-            this.pauseScreen.disableScreen();
+            GuiManager.closeCurrentGui();
             this.paused = false;
             Time.timeScale = 1;
         }

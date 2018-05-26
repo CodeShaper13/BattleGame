@@ -13,10 +13,6 @@ namespace src.entity {
         [SerializeField] // Show in Inspector, but private so script won't change it.
         private EnumTeam objectTeam;
 
-        protected override void onAwake() {
-            base.onAwake();
-        }
-
         protected override void onStart() {
             base.onStart();
 
@@ -36,6 +32,7 @@ namespace src.entity {
         }
 
         public void setTeam(Team newTeam) {
+            print("setting team to " + newTeam.getName());
             if(!(this.team == null || this.team == Team.NONE)) {
                 throw new Exception("Can not change objects team!");
             }
@@ -46,6 +43,8 @@ namespace src.entity {
 
             newTeam.join(this);
             this.team = newTeam;
+            // Used to help debug int he inspector
+            this.objectTeam = this.team.getEnum();
         }
 
         /// <summary>

@@ -40,6 +40,10 @@ namespace src.buildings {
             }
         }
 
+        public override float getHealthBarHeight() {
+            return 2f;
+        }
+
         public override Vector2 getFootprintSize() {
             return Vector2.one;
         }
@@ -71,11 +75,11 @@ namespace src.buildings {
             this.trainingProgress = tag.getFloat("trainingProgress");
             NbtList list = tag.getList("trainingQueue");
             foreach (NbtInt integer in list) {
-                this.trainingQueue.Enqueue(Registry.entityRegistry.getObjectfromRegistry(integer.Value));
+                this.trainingQueue.Enqueue(Registry.getObjectfromRegistry(integer.Value));
             }
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.setTag("trainingProgress", this.trainingProgress);
@@ -85,8 +89,6 @@ namespace src.buildings {
                 list.Add(new NbtInt(ro.getId()));
             }
             tag.Add(list);
-
-            return tag;
         }
     }
 }

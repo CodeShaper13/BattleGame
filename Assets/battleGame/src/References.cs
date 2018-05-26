@@ -1,4 +1,5 @@
-﻿using src.registry;
+﻿using src.entity.unit.stats;
+using src.registry;
 using UnityEngine;
 
 namespace src {
@@ -11,10 +12,9 @@ namespace src {
         /// <summary> Static singleton of the References object. </summary>
         public static References list;
 
-        private void Awake() {
-            References.list = this;
-            Registry.registryBootstrap();
-        }
+        public TextAsset maleNames;
+        public TextAsset femaleNames;
+        public TextAsset lastNames;
 
         // Units
         public GameObject unitBuilder;
@@ -30,6 +30,12 @@ namespace src {
         public GameObject buildingTower;
         public GameObject buldingWall;
 
+        public GameObject wallJoinPiece;
+
         public GameObject healthBarEffect;
+
+        // GUI
+        public GameObject guiPausedObject;
+        public GameObject guiUnitStatsObject;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using src.data;
 using src.entity;
+using src.party;
 
 namespace src {
 
@@ -25,8 +26,6 @@ namespace src {
         // Options
         public float sensitivity = 0.4f;
 
-        private int resources;
-
         //[HideInInspector]
         public BuildingBase selectedBuilding;
 
@@ -44,8 +43,6 @@ namespace src {
             base.onStart();
 
             this.party.setCameraMover(this);
-
-            this.setResources(Constants.STARTING_RESOURCES);
         }
 
         protected override void onUpdate() {
@@ -104,7 +101,7 @@ namespace src {
                         }
                     } else {
                         // Build outline specific input.
-                        BuildOutline.instance().processInput();
+                        BuildOutline.instance().updateOutline();
                     }
                 }
             }
@@ -124,7 +121,7 @@ namespace src {
         /// </summary>
         public void updateCount() {
             int currentTroopCount = 0;
-            int maxResources = this.getMaxResourceCount();
+            int maxResources = this.getTeam().getMaxResourceCount();
             foreach (SidedObjectBase o in this.getTeam().getMembers()) {
                 if (o is UnitBase) {
                     currentTroopCount++;
@@ -135,42 +132,9 @@ namespace src {
             this.troopCountText.text = "Troop " + currentTroopCount + "/" + max;
             this.troopCountText.fontStyle = (currentTroopCount == max ? FontStyle.Bold : FontStyle.Normal);
 
-            this.resourceText.text = "Resources: " + this.resources + "/" + maxResources;
-            this.resourceText.fontStyle = (this.resources == maxResources ? FontStyle.Bold : FontStyle.Normal);
-        }
-
-        /// <summary>
-        /// Returns the current number of resources that this team has.
-        /// </summary>
-        public int getResources() {
-            return this.resources;
-        }
-
-        /// <summary>
-        /// Sets the player's resources, clamping it between 0 and the maximum number the player can have.  Any overflow is discarded.
-        /// </summary>
-        public void setResources(int amount) {
-            this.resources = Mathf.Clamp(amount, 0, this.getMaxResourceCount());
-        }
-
-        /// <summary>
-        /// Reduces the player's resources by the passed amount.
-        /// </summary>
-        public void reduceResources(int amount) {
-            this.setResources(this.resources - amount);
-        }
-
-        /// <summary>
-        /// Returns the maximum amount of resources that this player can have.
-        /// </summary>
-        public int getMaxResourceCount() {
-            int maxResources = Constants.DEFAUT_RESOURCE_CAP;
-            foreach (SidedObjectBase o in this.getTeam().getMembers()) {
-                if (o is BuildingStoreroom) {
-                    maxResources += Constants.STOREROOM_RESOURCE_BOOST;
-                }
-            }
-            return maxResources;
+            int res = this.getTeam().getResources();
+            this.resourceText.text = "Resources: " + res + "/" + maxResources;
+            this.resourceText.fontStyle = (res == maxResources ? FontStyle.Bold : FontStyle.Normal);
         }
 
         /// <summary>

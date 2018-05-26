@@ -6,11 +6,13 @@
 5. Knight (Slow, high health)
 
 Buildings:
-1. Farm (Increases max troops)
-2. Workshop (Builder drop off, increases max resources)
-3. Training House (Makes troops)
-4. Defense Tower
-5. Wall
+  Camp (Increases max troops)
+  Producer (Produces resources)
+  Storeroom (Increase max resources and provides a builder drop off point)
+  Tower (Fire arrows at enemies)
+  Training House (Makes troops)
+  Wall (defends buildings)
+  Workshop (Builds special weapons like wagons)
 
 Props:
 1. Bush

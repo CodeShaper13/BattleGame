@@ -44,9 +44,9 @@ namespace src.buildings.harvestable {
         /// Returns true if the object was destroyed.
         /// </summary>
         public bool harvest(UnitBuilder builder) {
-            int remainingSpace = Constants.BUILDER_MAX_CARRY - builder.resources;
+            int remainingSpace = Constants.BUILDER_MAX_CARRY - builder.getResources();
             int amountToHarvest = Mathf.Min(Constants.BUILDER_COLLECT_PER_STRIKE, remainingSpace);
-            builder.resources += amountToHarvest;
+            builder.increaseResources(amountToHarvest);
 
             if (this.health.setHealth(this.health.getHealth() - amountToHarvest)) {
                 //TODO destroy/particle effect.
@@ -76,12 +76,11 @@ namespace src.buildings.harvestable {
             return 0;
         }
 
-        public override NbtCompound writeToNbt(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.Add(new NbtInt("health", this.health.getHealth()));
-
-            return tag;
+            tag.Add(new NbtInt("type", (int)this.type));
         }
 
         public int getMaxHealth() {

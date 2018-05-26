@@ -9,7 +9,7 @@ namespace src {
 
     public class BuildOutline : MonoBehaviour {
 
-        private const float HEIGHT = 0.25f;
+        private const float HEIGHT = 0.1f;
 
         private static BuildOutline singleton;
 
@@ -53,24 +53,29 @@ namespace src {
             return !BuildOutline.singleton.gameObject.activeSelf;
         }
 
-        public void processInput() {
+        public void updateOutline() {
             RaycastHit hit;
+            Vector3 correctedHit = Vector3.zero;
 
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
-                this.transform.position = new Vector3(hit.point.x, HEIGHT, hit.point.z);
+                correctedHit = new Vector3(
+                    Mathf.Round(hit.point.x),
+                    HEIGHT,
+                    Mathf.Round(hit.point.z));
+                this.transform.position = correctedHit;
             }
 
             if (Input.GetMouseButtonDown(0) && this.isSpaceFree()) {
                 CameraMover cm = CameraMover.instance();
 
                 // Create the new building.                
-                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(hit.point.x, 0, hit.point.z), Quaternion.identity);
+                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(correctedHit.x, 0, correctedHit.z), Quaternion.identity);
                 newBuilding.setTeam(cm.getTeam());
                 newBuilding.setHealth(1);
                 newBuilding.setConstructing();
 
                 // Remove resources.
-                cm.setResources(cm.getResources() - newBuilding.getData().getCost());
+                cm.getTeam().reduceResources(newBuilding.getData().getCost());
                 this.builder.setBuilding(newBuilding);
 
                 this.disableOutline();
@@ -102,7 +107,7 @@ namespace src {
 
         public void setSize(BuildingBase building) {
             Vector2 scale = building.getFootprintSize();
-            this.transform.localScale = new Vector3(scale.x, scale.y, 0.01f);
+            this.transform.localScale = new Vector3(scale.x - 0.1f, scale.y - 0.1f, 0.01f);
         }
 
         public bool isSpaceFree() {
