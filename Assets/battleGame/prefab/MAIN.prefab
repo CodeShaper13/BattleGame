@@ -182,7 +182,7 @@ GameObject:
   - component: {fileID: 114356569182683844}
   - component: {fileID: 114220598857577220}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: Canvas_Stats
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -869,12 +869,17 @@ MonoBehaviour:
   maleNames: {fileID: 4900000, guid: f9dca793d21074149983e2f52946ab29, type: 3}
   femaleNames: {fileID: 4900000, guid: c04f3d700c86d0d4abf1920c3c4c17d3, type: 3}
   lastNames: {fileID: 4900000, guid: 1f79ec4776281af4ab67e6da15fe63cd, type: 3}
+  constants: {fileID: 4900000, guid: 3d2788f41e2fe8441a21764d5465a3b2, type: 3}
   unitBuilder: {fileID: 1337850227582616, guid: a8164f5c549c8d6439919f6cb9f347f9,
     type: 2}
   unitSoldier: {fileID: 1444480080808916, guid: 356411af5cbe4b84bb9a8e06ea8a61eb,
     type: 2}
   unitArcher: {fileID: 1064884368048846, guid: 78782bcac68203f4d95ec598dd02650c, type: 2}
   unitHeavy: {fileID: 1895891790049202, guid: 556a3c541c08b6d4c8f9daca4aa01d93, type: 2}
+  specialWarWagon: {fileID: 0}
+  specialCannon: {fileID: 0}
+  projectileArrow: {fileID: 1950262293999708, guid: 412fdb5e03c75e54890086ce4dba05b7,
+    type: 2}
   buildingCamp: {fileID: 1732443387228330, guid: f1343fd51f419a941ae90822c9f314df,
     type: 2}
   buildingWorkshop: {fileID: 1783078369172136, guid: c8a675c02d5bb2a47a23ccd1c488675e,
@@ -887,10 +892,12 @@ MonoBehaviour:
     type: 2}
   buldingWall: {fileID: 1543438014750302, guid: a2d15954a3f869a4290d80ad679f4c53,
     type: 2}
+  wallJoinPiece: {fileID: 1170639614630716, guid: d47adb872f534284da46d42176392d28,
+    type: 2}
   healthBarEffect: {fileID: 1755604610232618, guid: 9742e3decd2441e488aad679a29309e4,
     type: 2}
-  guiPausedObject: {fileID: 0}
-  guiUnitStatsObject: {fileID: 0}
+  guiPausedObject: {fileID: 1003580322016122}
+  guiUnitStatsObject: {fileID: 1748497434432636}
 --- !u!114 &114699069192959694
 MonoBehaviour:
   m_ObjectHideFlags: 1

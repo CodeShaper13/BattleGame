@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 23527065530845716}
   - component: {fileID: 195705156676612764}
   - component: {fileID: 114088882429902184}
+  - component: {fileID: 114224004232911856}
   m_Layer: 0
   m_Name: Unit_Archer
   m_TagString: Untagged
@@ -258,7 +259,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   map: {fileID: 0}
-  objectTeam: 1
+  objectTeam: 0
+--- !u!114 &114224004232911856
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1064884368048846}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
+  originalLayer: 0
+  originalMaterials: []
 --- !u!114 &114415370702987658
 MonoBehaviour:
   m_ObjectHideFlags: 1

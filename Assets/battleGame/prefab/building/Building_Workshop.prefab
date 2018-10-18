@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 23209438116184894}
   - component: {fileID: 208333801126202304}
   - component: {fileID: 114123549084492398}
+  - component: {fileID: 114747676676607294}
   m_Layer: 0
   m_Name: Building_Workshop
   m_TagString: Untagged
@@ -110,6 +111,21 @@ MonoBehaviour:
   objectTeam: 0
   isConstructing: 0
   buildProgress: 0
+--- !u!114 &114747676676607294
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1783078369172136}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
+  originalLayer: 0
+  originalMaterials: []
 --- !u!208 &208333801126202304
 NavMeshObstacle:
   m_ObjectHideFlags: 1

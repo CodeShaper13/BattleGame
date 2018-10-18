@@ -182,6 +182,7 @@ MonoBehaviour:
   maxHealth: -1
   health: 0
   rect: {fileID: 224485382814858752}
+  canvas: {fileID: 223241139504042702}
 --- !u!222 &222034221071700458
 CanvasRenderer:
   m_ObjectHideFlags: 1
