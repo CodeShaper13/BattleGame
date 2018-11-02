@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using codeshaper.gui;
+using UnityEngine;
 
 namespace codeshaper {
 
@@ -10,12 +11,16 @@ namespace codeshaper {
         /// <summary> Static singleton of the References object. </summary>
         public static References list;
 
+        public GameObject buildOutlinePrefab;
+
+        // Text assets.
         public TextAsset maleNames;
         public TextAsset femaleNames;
         public TextAsset lastNames;
         public TextAsset constants;
+        public TextAsset textCredits;
 
-        // Units
+        // Entity Prefabs.
         public GameObject unitBuilder;
         public GameObject unitSoldier;
         public GameObject unitArcher;
@@ -24,10 +29,10 @@ namespace codeshaper {
         public GameObject specialWarWagon;
         public GameObject specialCannon;
 
-        // Projectilese
+        // Projectile Prefabs.
         public GameObject projectileArrow;
 
-        // Buildings
+        // Building Prefabs.
         public GameObject buildingCamp;
         public GameObject buildingProducer;
         public GameObject buildingWorkshop;
@@ -35,13 +40,17 @@ namespace codeshaper {
         public GameObject buildingStoreroom;
         public GameObject buildingTower;
         public GameObject buldingWall;
-
         public GameObject wallJoinPiece;
 
         public GameObject healthBarEffect;
 
         // GUI
-        public GameObject guiPausedObject;
-        public GameObject guiUnitStatsObject;
+        public GuiBase guiCreditsObject;
+        public GuiBase guiPausedObject;
+        public GuiBase guiUnitStatsObject;
+        public GuiBase guiLevelFailObject;
+        public GuiBase guiLevelWinObject;
+        public GuiBase guiFindUnlockableObject;
+        public GuiBase guiTitleScreenObject;
     }
 }

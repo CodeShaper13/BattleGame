@@ -12,6 +12,11 @@ namespace codeshaper.entity {
         [HideInInspector]
         public Map map;
 
+        /// <summary>
+        /// Objects marks as immutable are special and can not be destroyed via a button or edited (rotated, etc.)
+        /// </summary>
+        [SerializeField] // Used so it can be set in the inspecter.
+        private bool immutable;
         private Guid guid;
 
         private void Awake() {
@@ -30,6 +35,10 @@ namespace codeshaper.entity {
             this.onUpdate();
         }
 
+        private void LateUpdate() {
+            this.onLateUpdate();
+        }
+
         protected virtual void onAwake() { }
 
         protected virtual void onStart() { }
@@ -38,8 +47,20 @@ namespace codeshaper.entity {
 
         protected virtual void onUpdate() { }
 
+        protected virtual void onLateUpdate() { }
+
+        /// <summary>
+        /// Returns this objects Guid.
+        /// </summary>
         public Guid getGuid() {
             return this.guid;
+        }
+
+        /// <summary>
+        /// Returns true if the object is immutable.
+        /// </summary>
+        public bool isImmutable() {
+            return this.immutable;
         }
 
         /// <summary>
@@ -55,6 +76,7 @@ namespace codeshaper.entity {
         public virtual void readFromNbt(NbtCompound tag) {
             this.transform.position = tag.getVector3("position");
             this.transform.eulerAngles = tag.getVector3("eulerRotation");
+            this.immutable = tag.getBool("isImmutable");
             this.guid = new Guid(tag.getString("guid"));
         }
 
@@ -64,6 +86,7 @@ namespace codeshaper.entity {
         public virtual void writeToNbt(NbtCompound tag) {
             tag.setTag("position", this.transform.position);
             tag.setTag("eulerRotation", this.transform.eulerAngles);
+            tag.setTag("isImmutable", this.immutable);
             tag.setTag("guid", this.guid.ToString());
         }
 

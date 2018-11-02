@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace codeshaper.util {
@@ -8,7 +6,7 @@ namespace codeshaper.util {
     public static class FileUtils {
 
         /// <summary>
-        /// Reads a Text Asset and returns the contents.  Empt
+        /// Reads a Text Asset and returns the contents.  Empty
         /// line and lines starting with "#" are ignored.
         /// </summary>
         public static List<string> readTextAsset(TextAsset textAsset) {

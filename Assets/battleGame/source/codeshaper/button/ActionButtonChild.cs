@@ -1,18 +1,16 @@
-﻿using codeshaper.entity;
-using System;
-
-namespace codeshaper.button {
+﻿namespace codeshaper.button {
 
     public class ActionButtonChild : ActionButton {
 
-        private const int CHILD_ID = -1;
+        public const int CHILD_ID = -1;
 
         public ActionButtonParent parentActionButton;
 
-        public ActionButtonChild(string actionName) : base(actionName, CHILD_ID) {
+        public ActionButtonChild(string actionName) : base(actionName, CHILD_ID) { // There is no action, it is set in the constructor.
         }
 
-        public ActionButtonChild(string actionName, Action<SidedObjectEntity> action) : base(actionName, CHILD_ID, action) {
+        public override int getMask() {
+            return this.parentActionButton.getMask();
         }
     }
 }

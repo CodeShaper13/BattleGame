@@ -5,6 +5,9 @@ using codeshaper.entity.unit;
 using codeshaper.util;
 using UnityEngine;
 using codeshaper.data;
+using codeshaper.entity.unit.task;
+using System.Collections.Generic;
+using codeshaper.team;
 
 namespace codeshaper {
 
@@ -12,51 +15,26 @@ namespace codeshaper {
 
         private const float HEIGHT = 0.1f;
 
-        private static BuildOutline singleton;
-
         [SerializeField]
         private Material invalidMaterial;
         [SerializeField]
         private Material validMaterial;
         private MeshRenderer meshRenderer;
-
         private RegisteredObject buildingToPlace;
-        private UnitBuilder builder;
-
-        public static BuildOutline instance() {
-            return BuildOutline.singleton;
-        }
+        private List<UnitBuilder> cachedBuilders;
 
         private void Awake() {
-            BuildOutline.singleton = this;
 
+            this.cachedBuilders = new List<UnitBuilder>();
             this.meshRenderer = this.GetComponent<MeshRenderer>();
 
             // Make sure this object is at the right height.
-            this.transform.position = new Vector3(this.transform.position.x, HEIGHT, this.transform.position.z);
+            this.transform.position.setY(HEIGHT);
 
             this.disableOutline();
         }
 
         private void Update() {
-            // Update Color.
-            if (this.isSpaceFree()) {
-                this.meshRenderer.material = this.validMaterial;
-            } else {
-                this.meshRenderer.material = this.invalidMaterial;
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the build outline is disabled and normal clicking can be handled.
-        /// </summary>
-        public bool isDisabled() {
-            return !BuildOutline.singleton.gameObject.activeSelf;
-        }
-
-        public void updateOutline() {
-
-            // Move the outline around so it follows the mouse.
             RaycastHit hit;
             Vector3 correctedHit = Vector3.zero;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit)) {
@@ -67,32 +45,46 @@ namespace codeshaper {
                 this.transform.position = correctedHit;
             }
 
-            if (Input.GetMouseButtonDown(0) && this.isSpaceFree()) {
-                CameraMover cm = CameraMover.instance();
+            // Update Color.
+            if (this.isSpaceFree()) {
+                this.meshRenderer.material = this.validMaterial;
+            } else {
+                this.meshRenderer.material = this.invalidMaterial;
+            }
+        }
 
-                // Create the new building.                
-                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(correctedHit.x, 0, correctedHit.z), Quaternion.identity);
-                newBuilding.setTeam(cm.getControllingTeam());
+        /// <summary>
+        /// Returns true if the build outline is enabled outline specific input should be
+        /// handled instead of normal clicking.
+        /// </summary>
+        public bool isEnabled() {
+            return this.gameObject.activeSelf;
+        }
 
-                // Set the new buildings health and constructing state.
+        public void handleClick(bool leftBtnClick, bool rightBtnClick) {
+            if (leftBtnClick && this.isSpaceFree()) {
+                // Pick the builder to use.
+                UnitBuilder builder = Util.closestToPoint(this.transform.position, this.cachedBuilders, (entity) => {
+                    return entity.getTask().cancelable();
+                });
+                Team team = builder.getTeam();
+
+                // Create the new building GameObject and set it's team.                
+                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(this.transform.position.x, 0, this.transform.position.z), Quaternion.identity);
+                newBuilding.setTeam(team);
+
+                // Remove resources from the builder's team.
+                int buildingCost = newBuilding.getData().getCost();
+                team.reduceResources(buildingCost);
+
                 BuildingData bd = newBuilding.getData();
                 if(bd.isInstantBuild()) {
                     newBuilding.setHealth(bd.getMaxHealth());
                 } else {
-                    newBuilding.setHealth(1);
-                    newBuilding.setConstructing();
+                    builder.setTask(new TaskConstructBuilding(builder, newBuilding));
                 }
 
-                // Remove resources.
-                int buildingCost = newBuilding.getData().getCost();
-                cm.getControllingTeam().reduceResources(buildingCost);
-
-                // Send builder to the new building if it's not instant.
-                if(!bd.isInstantBuild()) {
-                    this.builder.setBuilding(newBuilding);
-                }
-
-                if(newBuilding is BuildingWall && cm.getControllingTeam().getResources() >= buildingCost) {
+                if(newBuilding is BuildingWall && team.getResources() >= buildingCost) {
                     // TODO move outline over?
                 } else {
                     this.disableOutline();
@@ -107,13 +99,17 @@ namespace codeshaper {
         /// <summary>
         /// Called to enable the outline effect.
         /// </summary>
-        public void enableOutline(RegisteredObject obj, UnitBuilder builder) {
+        public void enableOutline(RegisteredObject registeredBuilding, UnitBuilder builder) {
+            // Note, this could be called multiple times if multiple builders are in the same party.
             this.gameObject.SetActive(true);
 
-            this.buildingToPlace = obj;
-            this.builder = builder;
+            this.buildingToPlace = registeredBuilding;
+            this.cachedBuilders.Add(builder);
 
             this.setSize(this.buildingToPlace.getPrefab().GetComponent<BuildingBase>());
+
+            // Gray out the action buttons while the outline is being shown.
+            CameraMover.instance().actionButtons.setForceDisabled(true);
         }
 
         /// <summary>
@@ -121,6 +117,8 @@ namespace codeshaper {
         /// </summary>
         public void disableOutline() {
             this.gameObject.SetActive(false);
+            this.cachedBuilders.Clear();
+            CameraMover.instance().actionButtons.setForceDisabled(false);
         }
 
         /// <summary>

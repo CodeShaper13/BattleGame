@@ -1,10 +1,10 @@
-﻿using cakeslice;
-using fNbt;
+﻿using fNbt;
 using codeshaper.button;
 using codeshaper.registry;
 using codeshaper.team;
 using codeshaper.util;
 using UnityEngine;
+using codeshaper.util.outline;
 
 namespace codeshaper.entity {
 
@@ -16,24 +16,24 @@ namespace codeshaper.entity {
         [SerializeField] // Show in Inspector, but private so script won't change it.
         private EnumTeam objectTeam;
         private Team team;
-        private Outline outline;
+        private OutlineHelper outlineHelper;
 
         protected override void onAwake() {
             base.onAwake();
 
-            this.outline = this.GetComponent<Outline>();
+            this.outlineHelper = new OutlineHelper(this.gameObject);
+
+            if (this.objectTeam != EnumTeam.NONE) {
+                this.setTeam(Team.teamFromEnum(this.objectTeam));
+            } else {
+                this.setTeam(Team.NONE);
+            }
         }
 
         protected override void onStart() {
             base.onStart();
 
-            this.setOutlineVisibility(false);
-
-            if(this.objectTeam != EnumTeam.NONE) {
-                this.setTeam(Team.teamFromEnum(this.objectTeam));
-            } else {
-                this.setTeam(Team.NONE);
-            }
+            this.setOutlineVisibility(false, EnumOutlineType.ALL);
         }
 
         public override void onDeathCallback() {
@@ -46,15 +46,14 @@ namespace codeshaper.entity {
         /// Returns the bitmask of what buttons to display.
         /// </summary>
         public virtual int getButtonMask() {
-            return ActionButton.destroy.mask;
+            return ActionButton.destroy.getMask();
         }
 
         /// <summary>
         /// Overried to stop the unit from allowing the action buttons to be pressed
         /// depending on the units state.
-        /// 
-        /// Is this implemented?
         /// </summary>
+        //TODO not implemented.
         public virtual bool enableActionButton() {
             return true;
         }
@@ -96,8 +95,11 @@ namespace codeshaper.entity {
             this.objectTeam = this.team.getEnum();
         }
 
-        public virtual void setOutlineVisibility(bool visible) {
-            this.outline.enabled = visible;
+        /// <summary>
+        /// Sets if the outline is visible.  An optional number can be passed to set the outline color.
+        /// </summary>
+        public virtual void setOutlineVisibility(bool visible, EnumOutlineType type) {
+            this.outlineHelper.updateOutline(visible, type);
         }
     }
 }

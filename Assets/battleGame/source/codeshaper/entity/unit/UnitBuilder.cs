@@ -6,18 +6,17 @@ using codeshaper.util;
 
 namespace codeshaper.entity.unit {
 
-    public class UnitBuilder : UnitBase<UnitBuilder> {
+    public class UnitBuilder : UnitBase<UnitBuilder>, IResourceHolder {
 
-        private int resources;
-        private BuildingBase building;
+        private int heldResources;
 
         /// <summary>
         /// Sets the held resources to 0 and returns what
         /// the builder is carrying.
         /// </summary>
         public int deposite() {
-            int i = this.resources;
-            this.resources = 0;
+            int i = this.heldResources;
+            this.heldResources = 0;
             return i;
         }
 
@@ -26,11 +25,7 @@ namespace codeshaper.entity.unit {
         }
 
         public bool canCarryMore() {
-            return this.resources < Constants.BUILDER_MAX_CARRY;
-        }
-
-        public int getResources() {
-            return this.resources;
+            return this.heldResources < this.getHoldLimit();
         }
 
         public void increaseResources(int amount) {
@@ -46,32 +41,27 @@ namespace codeshaper.entity.unit {
         }
 
         public override int getButtonMask() {
-            return base.getButtonMask() | ActionButton.builderBuild.mask | ActionButton.harvestResources.mask;
+            return base.getButtonMask() | ActionButton.builderBuild.getMask() | ActionButton.harvestResources.getMask() | ActionButton.repair.getMask();
         }
-
-        public override bool enableActionButton() {
-            return !this.building.isConstructing;
-        }
-
-        public void setBuilding(BuildingBase building) {
-            this.building = building;
-            this.setTask(null);
-            this.setDestination(building.transform.position);
-
-            this.unitStats.buildingsBuilt.increase();
-        }
-
 
         public override void readFromNbt(NbtCompound tag) {
             base.readFromNbt(tag);
 
-            this.resources = tag.getInt("builderResources");
+            this.heldResources = tag.getInt("builderResources");
         }
 
         public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
-            tag.setTag("builderResources", this.resources);
+            tag.setTag("builderResources", this.heldResources);
+        }
+
+        public int getHeldResources() {
+            return this.heldResources;
+        }
+
+        public int getHoldLimit() {
+            return Constants.BUILDER_MAX_CARRY;
         }
     }
 }

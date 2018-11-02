@@ -20,9 +20,7 @@ namespace codeshaper.buildings {
             this.trainingQueue = new List<RegisteredObject>(this.getQueueSize());
         }
 
-        protected override void onUpdate() {
-            base.onUpdate();
-
+        protected override void preformTask() {
             if (this.trainingQueue.Count != 0) {
                 bool teamHasRoom = this.getTeam().getTroopCount() <= this.getTeam().getMaxTroopCount();
 

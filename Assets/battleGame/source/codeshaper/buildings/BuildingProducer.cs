@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace codeshaper.buildings {
 
-    public class BuildingProducer : BuildingBase {
+    public class BuildingProducer : BuildingBase, IResourceHolder {
 
         private float time;
         private int heldResources;
@@ -26,17 +26,14 @@ namespace codeshaper.buildings {
             return base.getButtonMask();
         }
 
-        protected override void onUpdate() {
-            base.onUpdate();
 
-            if(!this.isConstructing) {
-                if (this.heldResources < Constants.BUILDING_PRODUCER_MAX_HOLD) {
-                    this.time += (Time.deltaTime * Constants.BUILDING_PRODUCER_RATE);
+        protected override void preformTask() {
+            if (this.heldResources < Constants.BUILDING_PRODUCER_MAX_HOLD) {
+                this.time += (Time.deltaTime * Constants.BUILDING_PRODUCER_RATE);
 
-                    if (this.time > 0) {
-                        this.time = 0;
-                        this.heldResources += 1;
-                    }
+                if (this.time > 0) {
+                    this.time = 0;
+                    this.heldResources += 1;
                 }
             }
         }
@@ -57,6 +54,10 @@ namespace codeshaper.buildings {
 
         public int getHeldResources() {
             return this.heldResources;
+        }
+
+        public int getHoldLimit() {
+            return Constants.BUILDING_PRODUCER_MAX_HOLD;
         }
     }
 }

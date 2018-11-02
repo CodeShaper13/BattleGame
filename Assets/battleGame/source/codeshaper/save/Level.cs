@@ -1,22 +1,57 @@
-﻿using fNbt;
+﻿using codeshaper.util;
+using fNbt;
+using UnityEngine.SceneManagement;
 
-namespace Assets.battleGame.src.save {
+namespace codeshaper.save {
 
     public class Level {
 
-        public int sceneId;
+        private bool unlocked;
+        private string sceneName;
+        private Level[] unlocks;
 
-        public NbtCompound writeToNbt() {
-            NbtCompound tag = new NbtCompound("world");
-            //tag.Add(new NbtInt("seed", this.seed));
-            //NbtHelper.writeDirectVector3(tag, this.spawnPos, "spawn");
-            //tag.Add(new NbtInt("worldType", this.worldType));
-            //tag.Add(new NbtLong("lastLoaded", this.lastLoaded.ToBinary()));
-            return tag;
+        public Level(GameState state, string sceneName, params Level[] unlocks) {
+            state.allLevels.Add(this);
+
+            this.sceneName = sceneName;
         }
 
         public void readFromNbt(NbtCompound tag) {
+            this.unlocked = tag.getBool("unlocked");
+        }
 
+        public NbtCompound writeToNbt() {
+            NbtCompound tag = new NbtCompound();
+            tag.setTag("unlocked", this.unlocked);
+            return tag;
+        }
+
+        /// <summary>
+        /// Loads this level's scene.  Does not check if it is unlocked.
+        /// </summary>
+        public void loadLevelScene() {
+            SceneManager.LoadScene(this.sceneName);
+        }
+
+        /// <summary>
+        /// Unlocks this level.
+        /// </summary>
+        public void unlock() {
+            this.unlocked = true;
+        }
+
+        public bool isLocked() {
+            return !this.unlocked;
+        }
+
+        public string getSceneName() {
+            return this.sceneName;
+        }
+
+        public void unlockNextLevels() {
+            foreach(Level l in this.unlocks) {
+                l.unlock();
+            }
         }
     }
 }

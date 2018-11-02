@@ -26,7 +26,7 @@ namespace codeshaper.entity.projectiles {
 
                 // Damge target if the projectile is close enough.
                 if (MathHelper.inRange(this.transform.position, this.target.transform.position, 0.25f)) {
-                    bool isDead = this.target.damage(this.damage);
+                    bool isDead = this.target.damage(this, this.damage);
                     if(isDead && shooter is UnitBase) { // Not true for buildings like the tower.
                         ((UnitBase)this.shooter).unitStats.unitsKilled.increase();
                     }
@@ -57,6 +57,13 @@ namespace codeshaper.entity.projectiles {
             if(this.shooter != null) {
                 tag.setTag("shooter", this.shooter.getGuid());
             }
+        }
+
+        /// <summary>
+        /// Returns the object that shot this projectile.  This should never be null.
+        /// </summary>
+        public SidedObjectEntity getShooter() {
+            return this.shooter;
         }
 
         public void setProjectileInfo(SidedObjectEntity shooter, int damage, LivingObject target) {

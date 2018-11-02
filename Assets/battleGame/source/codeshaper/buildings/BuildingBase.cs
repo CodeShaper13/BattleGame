@@ -9,46 +9,53 @@ namespace codeshaper.buildings {
 
     public abstract class BuildingBase : SidedObjectEntity {
 
-        /// <summary> True if the building is being constructed.  Buildings that are still being built can not function. </summary>
-        public bool isConstructing;
+        /// <summary>
+        /// True if the building is being constructed.  Buildings that
+        /// are still being built can not function.
+        /// </summary>
+        private bool constructing;
         private float buildProgress;
 
         private int targetRotation = 0;
 
         protected override void onUpdate() {
-            base.onUpdate();
-
-            if(this.isConstructing) {
-                this.buildProgress += (Constants.CONSTRUCT_RATE * Time.deltaTime);
-
-                if((int)this.buildProgress > this.getMaxHealth()) {
-                    this.isConstructing = false;
-                    this.buildProgress = 0;
-                }
-                this.setHealth((int)this.buildProgress);
-            } else {
+            if(!this.constructing) {
                 this.preformTask();
             }
 
+            // Debug outline.
+            if(Main.DEBUG) {
+                Vector2 v = this.getFootprintSize();
+                GLDebug.DrawCube(this.transform.position, Quaternion.identity, new Vector3(v.x, 0.35f, v.y), new Color(0.5f, 0, 0.5f));
+            }
 
-            // Rotate the building slowly.
+            // Rotate the building slowly if it is being rotated.
             if(this.transform.eulerAngles.y != this.targetRotation) {
                 this.transform.rotation = Quaternion.RotateTowards(
                     this.transform.rotation,
                     Quaternion.Euler(0, this.targetRotation, 0),
-                    200 * Time.deltaTime);
+                    250 * Time.deltaTime);
             }
         }
 
         public override int getButtonMask() {
-            return ActionButton.buildingRotate.mask | base.getButtonMask();
+            int mask = base.getButtonMask();
+            if(!(this is BuildingWall)) {
+                mask |= ActionButton.buildingRotate.getMask();
+            }
+            return mask;
         }
 
         /// <summary>
         /// Sets the building to be currently being constructed by a builder.
         /// </summary>
         public void setConstructing() {
-            this.isConstructing = true;
+            this.constructing = true;
+            this.buildProgress = 1;
+        }
+
+        public bool isConstructing() {
+            return this.constructing;
         }
 
         public override float getSizeRadius() {
@@ -71,7 +78,7 @@ namespace codeshaper.buildings {
         /// <summary>
         /// Called every frame for the building to preform it's task, if it has any.
         /// </summary>
-        public virtual void preformTask() { }
+        protected virtual void preformTask() { }
 
         /// <summary>
         /// Returns the size of the building as a Vector2 of (width, height).
@@ -84,10 +91,27 @@ namespace codeshaper.buildings {
             return this.getData().getMaxHealth();
         }
 
-        public override void setOutlineVisibility(bool visible) {
+        /// <summary>
+        /// Used to continue to construct a building or to repair it.
+        /// Returns true if the building was finished on this call.
+        /// </summary>
+        public bool increaseConstructed(bool deductResources) {
+            this.buildProgress += (Constants.CONSTRUCT_RATE * Time.deltaTime);
+            bool finished = false;
 
+            if((int)this.buildProgress >= this.getMaxHealth()) {
+                this.constructing = false;
+                this.buildProgress = 0;
+                finished = true;
+            }
 
-            base.setOutlineVisibility(visible);
+            if(deductResources && (int)buildProgress > this.getHealth()) {
+                this.getTeam().reduceResources(1);
+            }
+
+            this.setHealth((int)this.buildProgress);
+
+            return finished;
         }
 
         public int getCost() {
@@ -104,7 +128,7 @@ namespace codeshaper.buildings {
         public override void readFromNbt(NbtCompound tag) {
             base.readFromNbt(tag);
 
-            this.isConstructing = tag.getBool("isBuilding");
+            this.constructing = tag.getBool("isBuilding");
             this.buildProgress = tag.getFloat("progress");
             this.targetRotation = tag.getInt("targetRotation");
         }
@@ -112,7 +136,7 @@ namespace codeshaper.buildings {
         public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
-            tag.setTag("isBuilding", this.isConstructing);
+            tag.setTag("isBuilding", this.constructing);
             tag.setTag("progress", this.buildProgress);
             tag.setTag("targetRotation", this.targetRotation);
         }

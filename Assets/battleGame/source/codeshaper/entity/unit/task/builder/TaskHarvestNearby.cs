@@ -1,6 +1,7 @@
 ﻿using codeshaper.buildings;
 using codeshaper.buildings.harvestable;
 using codeshaper.data;
+using codeshaper.util;
 using UnityEngine;
 
 namespace codeshaper.entity.unit.task.builder {
@@ -14,6 +15,19 @@ namespace codeshaper.entity.unit.task.builder {
         public TaskHarvestNearby(UnitBuilder unit) : base(unit) {
         }
 
+        public override void drawDebug() {
+            base.drawDebug();
+
+            // Draw lines to the target and drop off point.
+            bool flag = this.unit.canCarryMore();
+            if(Util.isAlive(this.target)) {
+                GLDebug.DrawLine(this.unit.getPos(), this.target.getPos(), flag ? Color.green : Color.red);
+            }
+            if(this.dropoffPoint != null) {
+                GLDebug.DrawLine(this.unit.getPos(), this.dropoffPoint.getPos(), flag ? Color.red : Color.green);
+            }
+        }
+
         public override bool preform() {
             this.cooldown -= Time.deltaTime;
 
@@ -25,7 +39,7 @@ namespace codeshaper.entity.unit.task.builder {
                     if (this.target == null) {
                         return false; // No target to be found, stop executing.
                     } else {
-                        this.unit.setDestination(this.target.transform.position, this.target.getSizeRadius() + this.unit.getSizeRadius());
+                        this.moveHelper.setDestination(this.target.transform.position, this.target.getSizeRadius() + this.unit.getSizeRadius());
                     }
                 }
 

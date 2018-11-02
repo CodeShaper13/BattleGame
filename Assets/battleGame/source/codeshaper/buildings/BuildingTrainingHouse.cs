@@ -19,11 +19,11 @@ namespace codeshaper.buildings {
         }
 
         public override int getButtonMask() {
-            return base.getButtonMask() | ActionButton.train.mask;
+            return base.getButtonMask() | ActionButton.train.getMask();
         }
 
         public override int getQueueSize() {
-            return Constants.TRAINING_HOUSE_QUEUE_SIZE;
+            return Constants.BUILDING_TRAINING_HOUSE_QUEUE_SIZE;
         }
     }
 }

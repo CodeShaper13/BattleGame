@@ -4,6 +4,7 @@ using codeshaper.data;
 using codeshaper.util;
 using UnityEngine;
 using cakeslice;
+using codeshaper.util.outline;
 
 namespace codeshaper.buildings {
 
@@ -44,14 +45,14 @@ namespace codeshaper.buildings {
             this.updateNeighborWalls();
         }
 
-        public void updateSelfWalls() {
+        private void updateSelfWalls() {
             this.posXExtension.updateState();
             this.negXExtension.updateState();
             this.posZExtension.updateState();
             this.negZExtension.updateState();
         }
 
-        public void updateNeighborWalls() {
+        private void updateNeighborWalls() {
             this.findAndUpdateNeightbor(Vector3.right);
             this.findAndUpdateNeightbor(Vector3.forward);
             this.findAndUpdateNeightbor(Vector3.left);
@@ -101,13 +102,13 @@ namespace codeshaper.buildings {
             this.negZExtension.write(tag);
         }
 
-        public override void setOutlineVisibility(bool visible) {
-            base.setOutlineVisibility(visible);
+        public override void setOutlineVisibility(bool visible, EnumOutlineType type) {
+            base.setOutlineVisibility(visible, type);
             // If the piece does not exist the method will prevent anything bad from happening.
-            this.posXExtension.setOutlineVisibility(visible);
-            this.posZExtension.setOutlineVisibility(visible);
-            this.negXExtension.setOutlineVisibility(visible);
-            this.negZExtension.setOutlineVisibility(visible);
+            this.posXExtension.setOutlineVisibility(visible, type);
+            this.posZExtension.setOutlineVisibility(visible, type);
+            this.negXExtension.setOutlineVisibility(visible, type);
+            this.negZExtension.setOutlineVisibility(visible, type);
         }
 
         /// <summary>
@@ -154,7 +155,7 @@ namespace codeshaper.buildings {
             private string saveName;
             private Vector3 vector;
             private BuildingWall parentWall;
-            private Outline outlineEffect;
+            private OutlineHelper outlineHelper;
 
             public WallExtension(BuildingWall parentWall, string saveName, Vector3 vec) {
                 this.parentWall = parentWall;
@@ -186,9 +187,9 @@ namespace codeshaper.buildings {
             }
 
 
-            public void setOutlineVisibility(bool visible) {
+            public void setOutlineVisibility(bool visible, EnumOutlineType type) {
                 if(this.isThere) {
-                    this.outlineEffect.enabled = visible;
+                    this.outlineHelper.updateOutline(visible, type);
                 }
             }
 
@@ -209,7 +210,7 @@ namespace codeshaper.buildings {
                     if(this.vector.z == 0) {
                         this.gameObj.transform.eulerAngles = new Vector3(0, 90, 0);
                     }
-                    this.outlineEffect = this.gameObj.GetComponent<Outline>();
+                    this.outlineHelper = new OutlineHelper(this.gameObj);
                 }
                 else {
                     print("add() called on an extension that already exists!");

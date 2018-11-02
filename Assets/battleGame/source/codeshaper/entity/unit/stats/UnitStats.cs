@@ -7,11 +7,13 @@ namespace codeshaper.entity.unit.stats {
 
     public class UnitStats {
 
+        // TODO what's this for?
         public bool dirty;
 
         private string firstName;
         private string lastName;
         private EnumGender gender;
+        private Characteristic characteristic;
 
         public readonly StatFloat distanceWalked;
         public readonly StatTime timeAlive;
@@ -23,12 +25,24 @@ namespace codeshaper.entity.unit.stats {
         // Builder specific
         public readonly StatInt resourcesCollected;
         public readonly StatInt buildingsBuilt;
+        public readonly StatInt repairsDone;
 
         // Not yet implemented, they are never increased.
         public readonly StatInt buildingUpgraded;
-        public readonly StatInt repairsDone;
 
         public UnitStats() {
+            int easterEggRnd = Random.Range(0, 1000000);
+            if (easterEggRnd == 111599) {
+                this.firstName = "PJ";
+                this.lastName = "Didelot";
+                this.gender = EnumGender.MALE;
+                this.characteristic = Characteristic.a; // TODO Set to the right thing.
+            } else {
+                Names.getRandomName(this.gender, out this.firstName, out this.lastName);
+                this.gender = Random.Range(0, 1) == 0 ? EnumGender.MALE : EnumGender.FEMALE;
+                this.characteristic = Characteristic.ALL[Random.Range(0, Characteristic.ALL.Length)];
+            }
+
             this.distanceWalked = new StatFloat(this, "Distance Walked", "disWalked");
             this.timeAlive = new StatTime(this, "Time Alive", "timeAlive");
             this.unitsKilled = new StatInt(this, "Units Killed", "uKills");
@@ -37,11 +51,9 @@ namespace codeshaper.entity.unit.stats {
             this.damageTaken = new StatInt(this, "Damage Taken", "damageTaken");
             this.resourcesCollected = new StatInt(this, "Resources Collected", "resCollected");
             this.buildingsBuilt = new StatInt(this, "Buildings Built", "buildingsBuilt");
-            this.buildingUpgraded = new StatInt(this, "Building Upgrades", "buildingUpgrades");
             this.repairsDone = new StatInt(this, "Repairs Done", "repairsDone");
 
-            this.gender = Random.Range(0, 1) == 0 ? EnumGender.MALE : EnumGender.FEMALE;
-            Names.getRandomName(this.gender, out this.firstName, out this.lastName);
+            this.buildingUpgraded = new StatInt(this, "Building Upgrades", "buildingUpgrades");
         }
 
         /// <summary>
@@ -59,6 +71,7 @@ namespace codeshaper.entity.unit.stats {
             this.firstName = tag.getString("firstName");
             this.lastName = tag.getString("lastName");
             this.gender = tag.getByte("gender") == 1 ? EnumGender.MALE : EnumGender.FEMALE;
+            this.characteristic = Characteristic.ALL[tag.getInt("characteristicID")];
 
             this.distanceWalked.read(tag);
             this.timeAlive.read(tag);
@@ -66,12 +79,16 @@ namespace codeshaper.entity.unit.stats {
             this.buildingsDestroyed.read(tag);
             this.damageDelt.read(tag);
             this.damageTaken.read(tag);
+            this.resourcesCollected.read(tag);
+            this.buildingsBuilt.read(tag);
+            this.repairsDone.read(tag);
         }
 
         public NbtCompound writeToNBT(NbtCompound tag) {
             tag.setTag("firstName", this.firstName);
             tag.setTag("lastName", this.lastName);
             tag.setTag("gender", this.gender == EnumGender.MALE ? 1 : 2);
+            tag.setTag("characteristicID", this.characteristic.getId());
 
             this.distanceWalked.write(tag);
             this.timeAlive.write(tag);
@@ -79,6 +96,9 @@ namespace codeshaper.entity.unit.stats {
             this.buildingsDestroyed.write(tag);
             this.damageDelt.write(tag);
             this.damageTaken.write(tag);
+            this.resourcesCollected.write(tag);
+            this.buildingsBuilt.read(tag);
+            this.repairsDone.write(tag);
 
             return tag;
         }
@@ -97,6 +117,7 @@ namespace codeshaper.entity.unit.stats {
             if(isBuilder) {
                 sb.AppendLine(this.resourcesCollected.ToString());
                 sb.AppendLine(this.buildingsBuilt.ToString());
+                sb.AppendLine(this.repairsDone.ToString());
             }
             return sb.ToString();
         }

@@ -42,11 +42,11 @@ namespace codeshaper.buildings.harvestable {
         /// Returns true if the object was destroyed.
         /// </summary>
         public bool harvest(UnitBuilder builder) {
-            int remainingSpace = Constants.BUILDER_MAX_CARRY - builder.getResources();
+            int remainingSpace = Constants.BUILDER_MAX_CARRY - builder.getHeldResources();
             int amountToHarvest = Mathf.Min(Constants.BUILDER_COLLECT_PER_STRIKE, remainingSpace);
             builder.increaseResources(amountToHarvest);
 
-            return this.damage(amountToHarvest);
+            return this.damage(builder, amountToHarvest);
         }
 
         public override void onDeathCallback() {

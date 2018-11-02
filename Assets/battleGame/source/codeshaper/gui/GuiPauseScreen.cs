@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace codeshaper.gui {
 
-    public class GuiPauseScreen : GuiScreen {
+    public class GuiPauseScreen : GuiBase {
 
         [SerializeField]
         private Button exitToTownButton;

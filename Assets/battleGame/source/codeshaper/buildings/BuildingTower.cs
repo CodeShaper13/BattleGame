@@ -20,7 +20,9 @@ namespace codeshaper.buildings {
             base.onUpdate();
 
             this.fireCooldown -= Time.deltaTime;
+        }
 
+        protected override void preformTask() {
             if(this.target == null || !(this.target)) {
                 this.findTarget();
             }

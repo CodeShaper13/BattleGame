@@ -8,29 +8,27 @@ namespace codeshaper.button {
     public class ActionButtonTrain : ActionButtonChild {
 
         private readonly string buttonText;
-        private EntityData entityData;
+        private readonly EntityData entityData;
 
         public ActionButtonTrain(RegisteredObject obj) : base(string.Empty) {
             this.entityData = obj.getPrefab().GetComponent<UnitBase>().getData();
             this.buttonText = this.entityData.getName() + " (" + this.entityData.getCost() + ")";
 
-            this.function = (unit) => {
+            this.setMainActionFunction((unit) => {
                 BuildingTrainingHouse trainingHouse = (BuildingTrainingHouse)unit;
-                bool added = trainingHouse.tryAddToQueue(obj);
-
-                if(added) {
+                if (trainingHouse.tryAddToQueue(obj)) {
                     // Remove resources
                     trainingHouse.getTeam().reduceResources(this.entityData.getCost());
                 }
-            };
+            });
+
+            this.setShouldDisableFunction((entity) => {
+                return this.entityData.getCost() > entity.getTeam().getResources();
+            });
         }
 
         public override string getText() {
             return buttonText;
-        }
-
-        public EntityData getEntityData() {
-            return this.entityData;
         }
     }
 }

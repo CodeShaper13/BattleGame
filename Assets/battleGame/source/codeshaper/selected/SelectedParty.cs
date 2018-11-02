@@ -3,6 +3,7 @@ using codeshaper.ui;
 using System.Collections.Generic;
 using UnityEngine;
 using codeshaper.button;
+using codeshaper.util.outline;
 
 namespace codeshaper.selected {
 
@@ -55,8 +56,9 @@ namespace codeshaper.selected {
         /// Moves all members of the party to the same point.
         /// </summary>
         public void moveAllTo(Vector3 point) {
+            int s = this.getPartySize();
             foreach (UnitBase u in this.units) {
-                u.setDestination(point);
+                u.walkToPoint(point, this.getPartySize());
             }
         }
 
@@ -71,27 +73,18 @@ namespace codeshaper.selected {
             }
         }
 
-        public void callOnAll(ActionButton ab) {
-            int buttonMask;
-            if(ab is ActionButtonChild) {
-                buttonMask = ((ActionButtonChild)ab).parentActionButton.mask;
-            } else {
-                buttonMask = ab.mask;
-            }
-
-            for (int i = this.units.Count - 1; i >= 0; i--) {
-                UnitBase unit = this.units[i];
-                if ((unit.getButtonMask() & buttonMask) != 0) {
-                    ab.function(unit);
-                }
-            }
+        /// <summary>
+        /// Returns the number of units in the party.
+        /// </summary>
+        public int getPartySize() {
+            return this.units.Count;
         }
 
         /// <summary>
         /// Returns true if the party is full and it can't hold any more members.
         /// </summary>
         public bool isFull() {
-            return this.units.Count >= PARTY_SIZE;
+            return this.getPartySize() >= PARTY_SIZE;
         }
 
         /// <summary>
@@ -101,7 +94,7 @@ namespace codeshaper.selected {
             int index = this.units.IndexOf(unit);
             if(index != -1) {
                 this.partyButtons[index].setUnit(null);
-                unit.setOutlineVisibility(false);
+                unit.setOutlineVisibility(false, EnumOutlineType.SELECTED);
                 this.units.RemoveAt(index);
 
                 // Slide the units down so there isn't an empty spot.
@@ -110,7 +103,7 @@ namespace codeshaper.selected {
                 }
             }
 
-            this.func();
+            this.hideIfEmpty();
         }
 
         /// <summary>
@@ -118,17 +111,17 @@ namespace codeshaper.selected {
         /// </summary>
         public void disband() {
             foreach(UnitBase unit in this.units) {
-                unit.setOutlineVisibility(false);
+                unit.setOutlineVisibility(false, EnumOutlineType.SELECTED);
             }
             this.units.Clear();
             foreach(PartyButton pb in this.partyButtons) {
                 pb.setUnit(null);
             }
-            this.func();
+            this.hideIfEmpty();
         }
 
-        private void func() {
-            this.setVisible(this.units.Count != 0);
+        public List<UnitBase> getAllUnits() {
+            return this.units;
         }
 
         /// <summary>
@@ -138,10 +131,10 @@ namespace codeshaper.selected {
         public bool tryAdd(UnitBase unit) {
             if(!this.isFull() && !this.units.Contains(unit)) {
                 this.units.Add(unit);
-                unit.setOutlineVisibility(true);
+                unit.setOutlineVisibility(true, EnumOutlineType.SELECTED);
                 this.partyButtons[this.units.Count - 1].setUnit(unit);
 
-                this.func();
+                this.hideIfEmpty();
 
                 return true;
             } else {
@@ -179,6 +172,13 @@ namespace codeshaper.selected {
             if (unit != null) {
                 this.cameraMover.centerOn(unit.transform.position);
             }
+        }
+
+        /// <summary>
+        /// Hides the hud if the party is empty, or reveals it if it has as least one member.
+        /// </summary>
+        private void hideIfEmpty() {
+            this.setVisible(this.units.Count != 0);
         }
     }
 }

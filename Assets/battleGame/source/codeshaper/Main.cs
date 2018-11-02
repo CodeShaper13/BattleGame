@@ -2,7 +2,10 @@
 using codeshaper.entity.unit.stats;
 using codeshaper.gui;
 using codeshaper.registry;
+using codeshaper.save;
+using codeshaper.util;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace codeshaper {
 
@@ -10,7 +13,13 @@ namespace codeshaper {
 
     public class Main : MonoBehaviour {
 
+        /// <summary> If true, debug mode is on. </summary>
+        public static bool DEBUG = true;
+        public static string SAVE_PATH = "saves/save1";
+
         private static Main singleton;
+
+        public GameState gameState;
 
         private bool paused;
 
@@ -24,18 +33,31 @@ namespace codeshaper {
 
                 References.list = GameObject.FindObjectOfType<References>();
 
-                // Preform bootstrap
+                // Preform bootstrap.
                 Constants.bootstrap();
                 Registry.registryBootstrap();
                 GuiManager.guiBootstrap();
                 Names.bootstrap();
-            }
-            else if (singleton != this) {
+            } else if (singleton != this) {
+                // As every scene contains a Main object, destroy the new ones that are loaded.
                 GameObject.Destroy(this.gameObject);
                 return;
             }
 
             GameObject.DontDestroyOnLoad(gameObject);
+
+            if(SceneManager.GetActiveScene().buildIndex == 0) {
+                // Tn the title sceen, show the title screen GUI.
+                GuiManager.openGui(GuiManager.titleScreen);
+            } else {
+                // Application started in a scene, this is in dev mode.
+                // Load the save or create a new one.
+                if(Util.doesSaveExists()) {
+                    this.gameState = new GameState(SAVE_PATH);
+                } else {
+                    this.startNewGame();
+                }
+            }
         }
 
         /// <summary>
@@ -61,6 +83,24 @@ namespace codeshaper {
             GuiManager.closeCurrentGui();
             this.paused = false;
             Time.timeScale = 1;
+        }
+
+        /// <summary>
+        /// Starts a new game and plays the cut scene.
+        /// </summary>
+        public void startNewGame() {
+            this.gameState = new GameState();
+
+            // Start cutscene.
+
+            // After cutscene, load first level.
+        }
+
+        /// <summary>
+        /// Loads the town scene.
+        /// </summary>
+        public void loadTownScene() {
+            SceneManager.LoadScene("town/Town");
         }
     }
 }

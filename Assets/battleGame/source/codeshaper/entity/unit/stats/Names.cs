@@ -5,17 +5,17 @@ namespace codeshaper.entity.unit.stats {
 
     public class Names {
 
-        private static Names mNames;
-        private static Names fNames;
-        private static Names lNames;
+        private static Names maleNames;
+        private static Names femaleNames;
+        private static Names lastNames;
 
         private readonly TextAsset textAsset;
         private string[] names;
 
         public static void bootstrap() {
-            Names.mNames = new Names(References.list.maleNames);
-            Names.fNames = new Names(References.list.femaleNames);
-            Names.lNames = new Names(References.list.lastNames);
+            Names.maleNames = new Names(References.list.maleNames);
+            Names.femaleNames = new Names(References.list.femaleNames);
+            Names.lastNames = new Names(References.list.lastNames);
         }
 
         public Names(TextAsset text) {
@@ -32,16 +32,11 @@ namespace codeshaper.entity.unit.stats {
 
         public static void getRandomName(EnumGender gender, out string firstName, out string lastName) {
             if(gender == EnumGender.MALE) {
-                if (Random.Range(1, 1000000) == 1) {
-                    firstName = "PJ";
-                    lastName = "Didelot";
-                }
-                firstName = Names.mNames.getRndName();
-
+                firstName = Names.maleNames.getRndName();
             } else {
-                firstName = Names.fNames.getRndName();
+                firstName = Names.femaleNames.getRndName();
             }
-            lastName = Names.lNames.getRndName();
+            lastName = Names.lastNames.getRndName();
         }
     }
 }

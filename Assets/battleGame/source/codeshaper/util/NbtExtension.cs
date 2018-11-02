@@ -18,12 +18,9 @@ namespace codeshaper.util {
             tag.Add(new NbtByteArray(name, value));
         }
 
-        // TODO test?
-        /*
         public static void setTag(this NbtCompound tag, string name, NbtCompound value) {
             tag.Add(new NbtCompound(name, value));
         }
-        */
 
         public static void setTag(this NbtCompound tag, string name, double value) {
             tag.Add(new NbtDouble(name, value));

@@ -2,6 +2,7 @@
 using codeshaper.data;
 using codeshaper.entity.unit;
 using codeshaper.ui;
+using codeshaper.util.outline;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,7 +26,7 @@ namespace codeshaper.selected {
 
         private void Update() {
             if(this.selected != null) {
-                string s = this.selected.getHealth() + "/" + this.selected.getMaxHealth() + (this.selected.isConstructing ? " (Building)" : string.Empty);
+                string s = this.selected.getHealth() + "/" + this.selected.getMaxHealth() + (this.selected.isConstructing() ? " (Building)" : string.Empty);
                 this.infoText.text = this.selected.getData().getName() + "\n" + s;
 
                 if(this.selected is BuildingQueuedProducerBase) {
@@ -48,10 +49,12 @@ namespace codeshaper.selected {
 
                     this.otherText.text = queueSize == 0 ? "Empty" : Mathf.Floor(trainTime - producer.getTrainingProgress()) + 1 + " Seconds";
                 }
-                else if(this.selected is BuildingProducer) {
-                    int i = ((BuildingProducer)this.selected).getHeldResources();
-                    string color = i >= Constants.BUILDING_PRODUCER_MAX_HOLD ? "red" : "black";
-                    this.otherText.text = "<color=" + color + ">Storage:\n" + i + "/" + Constants.BUILDING_PRODUCER_MAX_HOLD + "</color>";
+                else if(this.selected is IResourceHolder) {
+                    IResourceHolder holder = (IResourceHolder)this.selected;
+                    int held = holder.getHeldResources();
+                    int limit = holder.getHoldLimit();
+                    string color = held >= limit ? "red" : "black";
+                    this.otherText.text = "<color=" + color + ">Storage:\n" + held + "/" + limit + "</color>";
                 }
                 else {
                     this.otherText.text = string.Empty;
@@ -64,12 +67,12 @@ namespace codeshaper.selected {
         /// </summary>
         public void setBuilding(BuildingBase building) {
             if(this.selected != null && !this.selected.isDead()) {
-                this.selected.setOutlineVisibility(false);
+                this.selected.setOutlineVisibility(false, EnumOutlineType.SELECTED);
             }
 
             if(building != null) {
                 this.selected = building;
-                this.selected.setOutlineVisibility(true);
+                this.selected.setOutlineVisibility(true, EnumOutlineType.SELECTED);
             }
             else {
                 this.selected = null;
@@ -96,6 +99,13 @@ namespace codeshaper.selected {
         /// </summary>
         public BuildingBase getBuilding() {
             return this.selected;
+        }
+
+        /// <summary>
+        /// Returns true if a building is selected.
+        /// </summary>
+        public bool isSelected() {
+            return this.selected != null;
         }
     }
 }

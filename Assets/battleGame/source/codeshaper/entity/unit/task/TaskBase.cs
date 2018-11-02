@@ -1,4 +1,5 @@
-﻿using codeshaper.team;
+﻿using codeshaper.buildings;
+using codeshaper.team;
 using UnityEngine;
 
 namespace codeshaper.entity.unit.task {
@@ -9,9 +10,11 @@ namespace codeshaper.entity.unit.task {
         /// The Unit running the task.
         /// </summary>
         protected readonly T unit;
+        protected readonly MoveHelper moveHelper;
 
         public TaskBase(T unit) {
             this.unit = unit;
+            this.moveHelper = this.unit.moveHelper;
         }
 
         /// <summary>
@@ -22,7 +25,7 @@ namespace codeshaper.entity.unit.task {
         }
 
         /// <summary>
-        /// Returns the closest enemy object, or null if there are none.
+        /// Returns the closest enemy object to the point, or null if there are none.
         /// </summary>
         protected T findEntityOfType<T>(Vector3 point, float maxDistance = -1, bool findEnemies = true) where T : SidedObjectEntity {
             SidedObjectEntity obj = null;
@@ -45,24 +48,47 @@ namespace codeshaper.entity.unit.task {
         }
 
         /// <summary>
-        /// Sets the destination that this unit should move to.
+        /// Checks if the passed MapObject is within the passed units to this task's unit.
         /// </summary>
-        protected void setDestination(SidedObjectEntity target) {
-            this.unit.setDestination(target.transform.position, target.getSizeRadius() + this.unit.getSizeRadius() + 0.5f);
-        }
-
-        protected bool canReach(MapObject target, float maxDistance) {
-            maxDistance += (0.5f);
-            return Vector3.Distance(this.unit.getPos(), target.getPos()) <= maxDistance;
+        protected bool inRange(MapObject target, float maxDistance) {
+            return this.getDistance(target) <= maxDistance;
         }
 
         /// <summary>
-        /// Returns the distance between this unit and the passed entity.
+        /// Returns the distance between this unit and the passed MapObject.
         /// </summary>
-        protected float getDistance(SidedObjectEntity other) {
-            return Vector3.Distance(this.unit.transform.position, other.transform.position);
+        protected float getDistance(MapObject other) {
+            return Vector3.Distance(this.unit.getPos(), other.getPos());
+        }
+
+        /// <summary>
+        /// Checks if the unit is next to the passed building.
+        /// </summary>
+        protected bool nextToBuilding(BuildingBase building) {
+            Vector2 v = building.getFootprintSize();
+            Bounds b = new Bounds(building.getPos(), new Vector3(v.x + 1f, 4, v.y + 1f));
+            return b.Intersects(this.unit.GetComponent<Collider>().bounds);
         }
 
         public abstract bool preform();
+
+        public void onFinish() {
+            // There is no implementation, so there is no need to call super from implementations.
+        }
+
+        /// <summary>
+        /// Called when the unit is damaged.
+        /// </summary>
+        public virtual void onDamage(MapObject dealer) {
+            // There is no implementation, so there is no need to call super from implementations.
+        }
+
+        public virtual void drawDebug() {
+            // There is no implementation, so there is no need to call super from implementations.
+        }
+
+        public virtual bool cancelable() {
+            return true;
+        }
     }
 }

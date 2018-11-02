@@ -9,7 +9,7 @@ namespace codeshaper.entity.unit {
         }
 
         public override int getButtonMask() {
-            return base.getButtonMask() | ActionButton.idle.mask | ActionButton.attackNearby.mask | ActionButton.defend.mask;
+            return base.getButtonMask() | ActionButton.idle.getMask() | ActionButton.attackNearby.getMask() | ActionButton.defend.getMask();
         }
     }
 }

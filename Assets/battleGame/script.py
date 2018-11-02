@@ -1,5 +1,6 @@
 import os
 import fnmatch
+import time
 
 def Walk(root='.', recurse=True, pattern='*'):
     """
@@ -49,3 +50,5 @@ def LOC(root='.', recurse=True):
 lines = LOC()
 print("LOC: \n\tReal Lines: " + str(lines[0]) + "\n\tTotal Lines: " + str(lines[1]))
 print("Files: " + str(lines[2]))
+
+time.sleep(100)

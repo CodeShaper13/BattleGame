@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace codeshaper.gui {
 
-    public class GuiScreenUnitStats : GuiScreen {
+    public class GuiScreenUnitStats : GuiBase {
 
         [SerializeField]
         private Text nameText;

@@ -14,18 +14,19 @@ namespace codeshaper.team {
     // Teams are accessed through static fields for convenience and initialized in Map.Awake()
     public class Team {
 
-        public static Team NONE;
-        public static Team GREEN;
-        public static Team PURPLE;
-        public static Team ORANGE;
-        public static Team BLUE;
-        public static Team[] ALL_TEAMS;
+        public static Team NONE = new TeamNone(0);
+        public static Team GREEN = new Team(1, "Green", Color.green, EnumTeam.GREEN);
+        public static Team PURPLE = new Team(2, "Pruple", new Color(0.902f, 0.902f, 0.98f), EnumTeam.PURPLE);
+        public static Team ORANGE = new Team(3, "Orange", new Color(1f, 0.522f, 0.106f), EnumTeam.ORANGE);
+        public static Team BLUE = new Team(4, "Blue", Color.blue, EnumTeam.BLUE);
+        public static Team[] ALL_TEAMS = new Team[] { GREEN, PURPLE, ORANGE, BLUE };
 
         private readonly int teamId;
         private readonly string teamName;
         private readonly Color color;
-        private readonly List<SidedObjectEntity> members;
         private readonly EnumTeam enumTeam;
+
+        private readonly List<SidedObjectEntity> members;
 
         /// <summary> The number of resources the team has. </summary>
         private int resources;
@@ -41,20 +42,16 @@ namespace codeshaper.team {
         }
 
         /// <summary>
-        /// Instantiates the team objects.  Called from Map.Awake().
+        /// Resets the teams for a new map by clearing their member list.  Called from Map.Awake().
         /// </summary>
-        public static void initTeams() {
-            Team.NONE = new TeamNone(0);
-            Team.GREEN = new Team(1, "Green", Color.green, EnumTeam.GREEN);
-            Team.PURPLE = new Team(2, "Pruple", new Color(0.902f, 0.902f, 0.98f), EnumTeam.PURPLE);
-            Team.ORANGE = new Team(3, "Orange", new Color(1f, 0.522f, 0.106f), EnumTeam.ORANGE);
-            Team.BLUE = new Team(4, "Blue", Color.blue, EnumTeam.BLUE);
-
-            Team.ALL_TEAMS = new Team[] { GREEN, PURPLE, ORANGE, BLUE };
+        public static void resetTeams() {
+            foreach(Team t in Team.ALL_TEAMS) {
+                t.getMembers().Clear();
+            }
         }
 
         /// <summary>
-        /// Joins the passed object to the team, addign them to the list of members.
+        /// Joins the passed object to the team, adding them to the list of members.
         /// </summary>
         public virtual void join(SidedObjectEntity obj) {
             if(this.members.Contains(obj)) {
@@ -127,7 +124,7 @@ namespace codeshaper.team {
         /// Returns the maximum amount of resources that this Team can have.
         /// </summary>
         public int getMaxResourceCount() {
-            int maxResources = Constants.DEFAUT_RESOURCE_CAP;
+            int maxResources = Constants.STARTING_RESOURCE_CAP;
             foreach (SidedObjectEntity o in this.members) {
                 if (o is BuildingStoreroom) {
                     maxResources += Constants.BUILDING_STOREROOM_RESOURCE_BOOST;
@@ -148,11 +145,11 @@ namespace codeshaper.team {
         /// Returns the total number of troops this team can have.
         /// </summary>
         public int getMaxTroopCount() {
-            int i = Constants.DEFAULT_TROOP_CAP;
+            int i = Constants.STARTING_TROOP_CAP;
             foreach (SidedObjectEntity o in this.members) {
                 if (o is BuildingCamp) {
                     BuildingCamp camp = (BuildingCamp)o;
-                    if (!camp.isConstructing) {
+                    if (!camp.isConstructing()) {
                         i += Constants.BUILDING_CAMP_TROOP_BOOST;
                     }
                 }

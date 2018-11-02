@@ -1,57 +1,132 @@
 ﻿using codeshaper.util;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace codeshaper.data {
 
     public class KeyedSettings {
 
-        private readonly Dictionary<string, object> dict;
+        private readonly SortedDictionary<string, SettingEntry> dict;
+        private readonly bool forceDefaults;
 
-        public KeyedSettings(TextAsset textAsset) {
+        public KeyedSettings(TextAsset textAsset, bool forceDefaults) {
             List<string> list = FileUtils.readTextAsset(textAsset);
-            this.dict = new Dictionary<string, object>();
+            this.dict = new SortedDictionary<string, SettingEntry>();
+            this.forceDefaults = forceDefaults;
 
-            string[] s1;
-            string key, value;
-            foreach (string s in list) {
-                s1 = s.Split('=');
-                key = s1[0];
-                value = s1[1];
+            if(!forceDefaults) {
+                string[] stringArray;
+                string key, value;
+                string comment = null;
+                object settingValue;
 
-                float f;
-                if (float.TryParse(value, out f)) {
-                    if ((int)f == f) {
-                        this.dict.Add(key, (int)f);
+                foreach (string line in list) {
+                    if (line.StartsWith("#")) {
+                        comment = line.Substring(2).Trim();
                     }
-                    else {
-                        this.dict.Add(key, f);
+                    else if (line.Contains("=")) {
+                        stringArray = line.Split('=');
+                        key = stringArray[0];
+                        value = stringArray[1];
+
+                        float f;
+                        bool flag;
+
+                        if (float.TryParse(value, out f)) {
+                            settingValue = f;
+                        }
+                        else if (bool.TryParse(value, out flag)) {
+                            settingValue = flag;
+                        }
+                        else {
+                            settingValue = value; // String
+                        }
+
+                        this.dict.Add(key, new SettingEntry(settingValue, comment));
+
+                        comment = null;
                     }
-                    continue;
                 }
-                bool flag;
-                if (bool.TryParse(value, out flag)) {
-                    this.dict.Add(key, flag);
-                    continue;
-                }
-                this.dict.Add(key, value);
             }
         }
 
-        public float getFloat(string key) {
-            return (float)this.dict[key];
+        public void save(string path) {
+            if(this.forceDefaults) {
+                return; //Don't save, as we are forcing the code values to be used for this runtime.
+            }
+
+            StreamWriter writer = new StreamWriter(path, false);
+
+            string comment;
+            foreach (KeyValuePair<string, SettingEntry> entry in this.dict) {
+                comment = entry.Value.comment;
+                if(comment != null) {
+                    writer.WriteLine("# " + comment);
+                }
+                writer.WriteLine(entry.Key + "=" + entry.Value.value.ToString());
+            }
+            writer.Close();
         }
 
-        public int getInt(string key) {
-            return (int)this.dict[key];
+        public float getFloat(string key, float defaultValue, string comment = null) {
+            if (!this.forceDefaults) {
+                if (this.dict.ContainsKey(key)) {
+                    return (float)this.dict[key].value;
+                }
+                else {
+                    this.dict.Add(key, new SettingEntry(defaultValue, comment));
+                }
+            }
+            return defaultValue;
         }
 
-        public bool getBool(string key) {
-            return (bool)this.dict[key];
+        public int getInt(string key, int defaultValue, string comment = null) {
+            if(!this.forceDefaults) {
+                if (this.dict.ContainsKey(key)) {
+                    return (int)(float)this.dict[key].value;
+                }
+                else {
+                    this.dict.Add(key, new SettingEntry(defaultValue, comment));
+                }
+            }
+            return defaultValue;
         }
 
-        public string getString(string key) {
-            return (string)this.dict[key];
+        public bool getBool(string key, bool defaultValue, string comment = null) {
+            if (!this.forceDefaults) {
+                if (this.dict.ContainsKey(key)) {
+                    return (bool)this.dict[key].value;
+                }
+                else {
+                    this.dict.Add(key, new SettingEntry(defaultValue, comment));
+                }
+            }
+            return defaultValue;
+        }
+
+        public string getString(string key, string defaultValue, string comment = null) {
+            if (!this.forceDefaults) {
+                if (this.dict.ContainsKey(key)) {
+                    return (string)this.dict[key].value;
+                }
+                else {
+                    this.dict.Add(key, new SettingEntry(defaultValue, comment));
+                }
+            }
+            return defaultValue;
+        }
+
+        private struct SettingEntry {
+
+            public readonly object value;
+            /// <summary> May be null. </summary>
+            public readonly string comment;
+
+            public SettingEntry(object value, string comment) {
+                this.value = value;
+                this.comment = comment;
+            }
         }
     }
 }
