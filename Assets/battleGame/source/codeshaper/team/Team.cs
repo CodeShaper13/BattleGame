@@ -1,72 +1,52 @@
-﻿using fNbt;
-using codeshaper.buildings;
+﻿using codeshaper.buildings;
 using codeshaper.data;
 using codeshaper.entity;
 using codeshaper.map;
-using codeshaper.registry;
+using codeshaper.nbt;
 using codeshaper.util;
+using fNbt;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace codeshaper.team {
 
     // Teams are accessed through static fields for convenience and initialized in Map.Awake()
-    public class Team {
+    public class Team : INbtSerializable {
 
         public static Team NONE = new TeamNone(0);
-        public static Team GREEN = new Team(1, "Green", Color.green, EnumTeam.GREEN);
-        public static Team PURPLE = new Team(2, "Pruple", new Color(0.902f, 0.902f, 0.98f), EnumTeam.PURPLE);
-        public static Team ORANGE = new Team(3, "Orange", new Color(1f, 0.522f, 0.106f), EnumTeam.ORANGE);
-        public static Team BLUE = new Team(4, "Blue", Color.blue, EnumTeam.BLUE);
+        public static Team GREEN = new Team(1, "green", Color.green);
+        public static Team PURPLE = new Team(2, "purple", new Color(0.40f, 0.07f, 0.54f));
+        public static Team ORANGE = new Team(3, "orange", new Color(1f, 0.522f, 0.106f));
+        public static Team BLUE = new Team(4, "blue", Color.blue);
         public static Team[] ALL_TEAMS = new Team[] { GREEN, PURPLE, ORANGE, BLUE };
 
+        public readonly Predicate<MapObject> predicateThisTeam;
+        public readonly Predicate<MapObject> predicateOtherTeam;
+
         private readonly int teamId;
+        private readonly string internalName;
         private readonly string teamName;
         private readonly Color color;
         private readonly EnumTeam enumTeam;
-
-        private readonly List<SidedObjectEntity> members;
-
         /// <summary> The number of resources the team has. </summary>
         private int resources;
+        private Map map;
 
-        private Team(int teamId, string name, Color color, EnumTeam team) {
+        private Team(int teamId, string name, Color color) {
             this.teamId = teamId;
-            this.teamName = name;
+            this.internalName = name;
+            this.teamName = char.ToUpper(name[0]) + name.Substring(1);
             this.color = color;
-            this.enumTeam = team;
-            this.members = new List<SidedObjectEntity>();
+            this.enumTeam = (EnumTeam)this.teamId;
+
+            this.predicateThisTeam = (MapObject obj) => { return obj is SidedObjectEntity && ((SidedObjectEntity)obj).getTeam() == this; };
+            this.predicateOtherTeam = (MapObject obj) => { return obj is SidedObjectEntity && ((SidedObjectEntity)obj).getTeam() != this; };
+        }
+
+        public void prepare(Map map) {
+            this.map = map;
 
             this.setResources(Constants.STARTING_RESOURCES);
-        }
-
-        /// <summary>
-        /// Resets the teams for a new map by clearing their member list.  Called from Map.Awake().
-        /// </summary>
-        public static void resetTeams() {
-            foreach(Team t in Team.ALL_TEAMS) {
-                t.getMembers().Clear();
-            }
-        }
-
-        /// <summary>
-        /// Joins the passed object to the team, adding them to the list of members.
-        /// </summary>
-        public virtual void join(SidedObjectEntity obj) {
-            if(this.members.Contains(obj)) {
-                throw new Exception("Tried to add " + obj.name + "  to team " + this.teamName + " but it was already on the steam.");
-            }
-            this.members.Add(obj);
-        }
-
-        /// <summary>
-        /// Removes the passed member from the team, throwing an exception if they were not on the team.
-        /// </summary>
-        public virtual void leave(SidedObjectEntity obj) {
-            if(!this.members.Remove(obj)) {
-                throw new Exception("Tried to remove " + obj.name + " from team " + this.teamName + " but it wasn't a memeber of the team!");
-            }
         }
 
         /// <summary>
@@ -78,13 +58,6 @@ namespace codeshaper.team {
 
         public Color getColor() {
             return this.color;
-        }
-
-        /// <summary>
-        /// Returns all members on the team.
-        /// </summary>
-        public List<SidedObjectEntity> getMembers() {
-            return this.members;
         }
 
         public EnumTeam getEnum() {
@@ -125,7 +98,7 @@ namespace codeshaper.team {
         /// </summary>
         public int getMaxResourceCount() {
             int maxResources = Constants.STARTING_RESOURCE_CAP;
-            foreach (SidedObjectEntity o in this.members) {
+            foreach (SidedObjectEntity o in this.map.findMapObjects(this.predicateThisTeam)) {
                 if (o is BuildingStoreroom) {
                     maxResources += Constants.BUILDING_STOREROOM_RESOURCE_BOOST;
                 }
@@ -136,9 +109,8 @@ namespace codeshaper.team {
         /// <summary>
         /// Returns the total number of troops on this team.
         /// </summary>
-        /// <returns></returns>
         public int getTroopCount() {
-            return this.members.Count;
+            return this.map.findMapObjects(this.predicateThisTeam).Count;
         }
 
         /// <summary>
@@ -146,7 +118,7 @@ namespace codeshaper.team {
         /// </summary>
         public int getMaxTroopCount() {
             int i = Constants.STARTING_TROOP_CAP;
-            foreach (SidedObjectEntity o in this.members) {
+            foreach (SidedObjectEntity o in this.map.findMapObjects(this.predicateThisTeam)) {
                 if (o is BuildingCamp) {
                     BuildingCamp camp = (BuildingCamp)o;
                     if (!camp.isConstructing()) {
@@ -157,54 +129,44 @@ namespace codeshaper.team {
             return i;
         }
 
-        public void read(Map map, NbtCompound tag) {
-            NbtList list = tag.getList("members");
-            foreach(NbtCompound compound in list) {
-                int id = compound.getInt("id");
-                RegisteredObject registeredObject = Registry.getObjectfromRegistry(id);
-                map.spawnEntity(registeredObject, compound);
-            }
+        public void readFromNbt(NbtCompound tag) {
+            NbtCompound tag1 = tag.getCompound(this.internalName);
 
-            this.setResources(tag.getInt("resources"));
+            this.setResources(tag1.getInt("resources"));
         }
 
-        public NbtCompound write() {
-            NbtCompound tag = new NbtCompound(this.teamName);
+        public void writeToNbt(NbtCompound tag) {
+            NbtCompound tag1 = new NbtCompound(this.internalName);
+            tag1.setTag("resources", this.resources);
 
-            NbtList list = new NbtList("members", NbtTagType.Compound);
-            foreach (SidedObjectEntity obj in this.members) {
-                NbtCompound t = new NbtCompound();
-                obj.writeToNbt(t);
-                list.Add(t);
-            }
-
-            tag.Add(list);
-            tag.setTag("resources", this.resources);
-
-            return tag;
+            tag.Add(tag1);
         }
 
-        public static Team teamFromEnum(EnumTeam enumTeam) {
+        /// <summary>
+        /// Returns the Team with the passed ID, or Team.None if the ID does not point to a team.
+        /// </summary>
+        public static Team getTeamFromId(int id) {
+            foreach(Team team in Team.ALL_TEAMS) {
+                if(team.teamId == id) {
+                    return team;
+                }
+            }
+            return Team.NONE;
+        }
+
+        public static Team getTeamFromEnum(EnumTeam enumTeam) {
             switch (enumTeam) {
                 case EnumTeam.GREEN: return Team.GREEN;
                 case EnumTeam.PURPLE: return Team.PURPLE;
                 case EnumTeam.ORANGE: return Team.ORANGE;
                 case EnumTeam.BLUE: return Team.BLUE;
-                default: return Team.NONE;
+                case EnumTeam.NONE: default: return Team.NONE;
             }
         }
 
         private class TeamNone : Team {
 
-            public TeamNone(int teamId) : base(teamId, "None", Color.white, EnumTeam.NONE) { }
-
-            public override void join(SidedObjectEntity obj) {
-                // Don't keep track of members.
-            }
-
-            public override void leave(SidedObjectEntity obj) {
-                // Don't keep track of members.
-            }
+            public TeamNone(int teamId) : base(teamId, "None", Color.white) { }
         }
     }
 }

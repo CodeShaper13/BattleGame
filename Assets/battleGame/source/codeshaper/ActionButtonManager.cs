@@ -1,8 +1,7 @@
-﻿using codeshaper.buildings;
-using codeshaper.button;
+﻿using codeshaper.button;
 using codeshaper.entity;
 using codeshaper.entity.unit;
-using codeshaper.team;
+using codeshaper.map;
 using codeshaper.util;
 using codeshaper.util.outline;
 using System.Collections.Generic;
@@ -72,7 +71,7 @@ namespace codeshaper {
         /// Shows the correct buttons on the side of the screen based on the selected units or building.
         /// </summary>
         public void updateSideButtons() {
-            int mask = this.getSelectedMask();
+            int mask = this.cameraMover.getSelected().getMask();
             this.currentlyShownButtons.Clear();
 
             for (int i = 0; i < ActionButton.buttonList.Length; i++) {
@@ -121,18 +120,6 @@ namespace codeshaper {
             }
             foreach (ButtonWrapper bw in this.buttonWrappers) {
                 bw.setInteractable(!this.forceDisabled);
-            }
-        }
-
-        /// <summary>
-        /// Returns the button bit mask to use based on the selected object(s).
-        /// </summary>
-        private int getSelectedMask() {
-            BuildingBase building = this.cameraMover.selectedBuilding.getBuilding();
-            if (building != null) {
-                return building.getButtonMask();
-            } else {
-                return this.cameraMover.party.getPartyMask();
             }
         }
 
@@ -195,7 +182,7 @@ namespace codeshaper {
             // Remove the outline from all of the entities.
             foreach(SidedObjectEntity entity in this.selectedOutlineObjects) {
                 if(Util.isAlive(entity)) {
-                    entity.setOutlineVisibility(false, EnumOutlineType.ACTION_OPTION);
+                    entity.setOutlineVisibility(false, EnumOutlineParam.ACTION_OPTION);
                 }
             }
             this.selectedOutlineObjects.Clear();
@@ -209,12 +196,10 @@ namespace codeshaper {
                 ActionButtonRequireClick btnRequireClick = (ActionButtonRequireClick)actionButton;
 
                 // Iterate through all objects and outline the ones that are valid selections.
-                foreach(Team t in Team.ALL_TEAMS) {
-                    foreach(SidedObjectEntity entity in t.getMembers()) {
-                        if(btnRequireClick.isValidForAction(this.cameraMover.getTeam(), entity)) {
-                            entity.setOutlineVisibility(true, EnumOutlineType.ACTION_OPTION);
-                            this.selectedOutlineObjects.Add(entity);
-                        }
+                foreach(SidedObjectEntity entity in Map.instance().findMapObjects(null)) {
+                    if(btnRequireClick.isValidForAction(this.cameraMover.getTeam(), entity)) {
+                        entity.setOutlineVisibility(true, EnumOutlineParam.ACTION_OPTION);
+                        this.selectedOutlineObjects.Add(entity);
                     }
                 }
 
@@ -227,12 +212,7 @@ namespace codeshaper {
                 // TODO tell the user they need to click something.  Outline valid selections?
             } else {
                 // Do something right away.
-                if (this.cameraMover.selectedBuilding.getBuilding() != null) {
-                    actionButton.callFunction(this.cameraMover.selectedBuilding.getBuilding());
-                }
-                else {
-                    actionButton.callFunction(this.cameraMover.party.getAllUnits());
-                }
+                this.cameraMover.getSelected().callFunctionOn(actionButton);
             }
         }
 
@@ -244,7 +224,7 @@ namespace codeshaper {
 
             for (int i = 0; i < MAX_BUTTONS; i++) {
                 GameObject btn = GameObject.Instantiate(this.buttonPrefab, parent);
-                btn.GetComponent<RectTransform>().anchoredPosition = new Vector3(80, -((48 * i) + 24), 0);
+                btn.GetComponent<RectTransform>().anchoredPosition = new Vector3(68, -((40 * i) + 20), 0);
                 btn.name = (isSub ? "Sub" : "Action") + "Button[" + i + "]";
 
                 Button b = btn.GetComponent<Button>();
@@ -263,14 +243,14 @@ namespace codeshaper {
                 btnWrapper.setInteractable(!actionBtn.shouldDisable(this.cameraMover.selectedBuilding.getBuilding()));
             }
             else {
-                bool flag = true;
+                bool notInteractable = true;
                 int buttonMask = actionBtn.getMask();
-                foreach (UnitBase entity in this.cameraMover.party.getAllUnits()) {
+                foreach (UnitBase entity in this.cameraMover.selectedParty.getAllUnits()) {
                     if ((entity.getButtonMask() & buttonMask) != 0) {
-                        flag = flag && (actionBtn.shouldDisable(entity) || !entity.getTask().cancelable());
+                        notInteractable &= (actionBtn.shouldDisable(entity) || !entity.getTask().cancelable());
                     }
                 }
-                btnWrapper.setInteractable(!flag);
+                btnWrapper.setInteractable(!notInteractable);
             }
         }
     }

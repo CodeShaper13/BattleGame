@@ -3,6 +3,7 @@ using codeshaper.entity.unit;
 using codeshaper.util;
 using System;
 using UnityEngine;
+using codeshaper.nbt;
 
 namespace codeshaper.entity.projectiles {
 
@@ -43,20 +44,16 @@ namespace codeshaper.entity.projectiles {
             base.readFromNbt(tag);
 
             this.damage = tag.getInt("damageDelt");
-            this.target = this.map.getSidedObjectFromGuid((Guid)tag.getGuid("target"));
-            Guid guid = (Guid)tag.getGuid("shooter");
-            if(guid != null) {
-                this.shooter = (UnitBase)this.map.getSidedObjectFromGuid(guid);
-            }
+            this.target = (LivingObject)this.map.findMapObjectFromGuid(tag.getGuid("target"));
+            Guid guid = tag.getGuid("shooter");
+            this.shooter = (SidedObjectEntity)(guid != Guid.Empty ? this.map.findMapObjectFromGuid(guid) : null);
         }
 
         public override void writeToNbt(NbtCompound tag) {
             base.writeToNbt(tag);
 
             tag.setTag("damageDelt", this.damage);
-            if(this.shooter != null) {
-                tag.setTag("shooter", this.shooter.getGuid());
-            }
+            tag.setTag("shooter", Util.isAlive(this.shooter) ? this.shooter.getGuid() : Guid.Empty);
         }
 
         /// <summary>

@@ -15,32 +15,34 @@ namespace codeshaper.util.outline {
             this.outline = obj.GetComponent<Outline>();
         }
 
-        public bool isVisible(EnumOutlineType type) {
+        public bool isOutlineVisible(EnumOutlineParam type) {
             switch (type) {
-                case EnumOutlineType.SELECTED:
+                case EnumOutlineParam.SELECTED:
                     return this.outline1;
-                case EnumOutlineType.ACTION_OPTION:
+                case EnumOutlineParam.ACTION_OPTION:
                     return this.outline2;
-                case EnumOutlineType.RED:
+                case EnumOutlineParam.RED:
                     return this.outline3;
+                case EnumOutlineParam.ANY:
+                    return this.outline1 || this.outline2 || this.outline3;
             }
             return false;
         }
 
-        public void updateOutline(bool visible, EnumOutlineType type) {
+        public void updateOutline(bool visible, EnumOutlineParam type) {
             switch(type) {
-                case EnumOutlineType.ALL:
+                case EnumOutlineParam.ALL:
                     this.outline1 = visible;
                     this.outline2 = visible;
                     this.outline3 = visible;
                     break;
-                case EnumOutlineType.SELECTED:
+                case EnumOutlineParam.SELECTED:
                     this.outline1 = visible;
                     break;
-                case EnumOutlineType.ACTION_OPTION:
+                case EnumOutlineParam.ACTION_OPTION:
                     this.outline2 = visible;
                     break;
-                case EnumOutlineType.RED:
+                case EnumOutlineParam.RED:
                     this.outline3 = visible;
                     break;
             }

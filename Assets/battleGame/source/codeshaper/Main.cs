@@ -15,6 +15,7 @@ namespace codeshaper {
 
         /// <summary> If true, debug mode is on. </summary>
         public static bool DEBUG = true;
+        public static bool DEBUG_HEALTH = true;
         public static string SAVE_PATH = "saves/save1";
 
         private static Main singleton;
@@ -52,7 +53,7 @@ namespace codeshaper {
             } else {
                 // Application started in a scene, this is in dev mode.
                 // Load the save or create a new one.
-                if(Util.doesSaveExists()) {
+                if(FileUtils.doesSaveExists()) {
                     this.gameState = new GameState(SAVE_PATH);
                 } else {
                     this.startNewGame();

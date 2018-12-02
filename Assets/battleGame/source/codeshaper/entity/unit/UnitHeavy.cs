@@ -4,7 +4,7 @@ namespace codeshaper.entity.unit {
 
     public class UnitHeavy : UnitFighting {
 
-        public override EntityData getData() {
+        public override EntityBaseStats getData() {
             return Constants.ED_HEAVY;
         }
     }

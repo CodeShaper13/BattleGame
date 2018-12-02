@@ -27,7 +27,7 @@ namespace codeshaper.ui {
         private void Update() {
             if (this.unit != null) {
                 string s = this.unit.getHealth() + "/" + this.unit.getMaxHealth();
-                this.btnHpText.text = this.unit.getData().getName() + "\n" + s;
+                this.btnHpText.text = this.unit.getData().getUnitTypeName() + "\n" + s;
             }
             else {
                 this.btnHpText.text = "...";

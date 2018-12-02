@@ -5,6 +5,7 @@ using codeshaper.util;
 using UnityEngine;
 using cakeslice;
 using codeshaper.util.outline;
+using codeshaper.nbt;
 
 namespace codeshaper.buildings {
 
@@ -102,7 +103,7 @@ namespace codeshaper.buildings {
             this.negZExtension.write(tag);
         }
 
-        public override void setOutlineVisibility(bool visible, EnumOutlineType type) {
+        public override void setOutlineVisibility(bool visible, EnumOutlineParam type) {
             base.setOutlineVisibility(visible, type);
             // If the piece does not exist the method will prevent anything bad from happening.
             this.posXExtension.setOutlineVisibility(visible, type);
@@ -187,7 +188,7 @@ namespace codeshaper.buildings {
             }
 
 
-            public void setOutlineVisibility(bool visible, EnumOutlineType type) {
+            public void setOutlineVisibility(bool visible, EnumOutlineParam type) {
                 if(this.isThere) {
                     this.outlineHelper.updateOutline(visible, type);
                 }
@@ -206,8 +207,8 @@ namespace codeshaper.buildings {
                     this.isThere = true;
                     this.gameObj = GameObject.Instantiate(References.list.wallJoinPiece);
                     this.gameObj.transform.parent = this.parentWall.transform;
-                    this.gameObj.transform.position = this.parentWall.transform.position + (this.vector * 0.375f);
-                    if(this.vector.z == 0) {
+                    this.gameObj.transform.position = this.parentWall.transform.position + (this.vector * 0.25f);
+                    if(this.vector.x == 0) {
                         this.gameObj.transform.eulerAngles = new Vector3(0, 90, 0);
                     }
                     this.outlineHelper = new OutlineHelper(this.gameObj);

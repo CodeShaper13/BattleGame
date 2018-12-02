@@ -5,15 +5,17 @@ using codeshaper.entity.unit;
 using codeshaper.util;
 using UnityEngine;
 using codeshaper.data;
-using codeshaper.entity.unit.task;
 using System.Collections.Generic;
 using codeshaper.team;
+using codeshaper.entity.unit.task.builder;
 
 namespace codeshaper {
 
     public class BuildOutline : MonoBehaviour {
 
         private const float HEIGHT = 0.1f;
+
+        private static BuildOutline singleton;
 
         [SerializeField]
         private Material invalidMaterial;
@@ -23,14 +25,21 @@ namespace codeshaper {
         private RegisteredObject buildingToPlace;
         private List<UnitBuilder> cachedBuilders;
 
+        public static BuildOutline instance() {
+            return BuildOutline.singleton;
+        }
+
         private void Awake() {
+            BuildOutline.singleton = this;
 
             this.cachedBuilders = new List<UnitBuilder>();
             this.meshRenderer = this.GetComponent<MeshRenderer>();
 
             // Make sure this object is at the right height.
             this.transform.position.setY(HEIGHT);
+        }
 
+        private void Start() {
             this.disableOutline();
         }
 
@@ -61,33 +70,39 @@ namespace codeshaper {
             return this.gameObject.activeSelf;
         }
 
-        public void handleClick(bool leftBtnClick, bool rightBtnClick) {
-            if (leftBtnClick && this.isSpaceFree()) {
+        public void handleClick() {
+            if (Input.GetMouseButtonUp(0) && this.isSpaceFree()) {
                 // Pick the builder to use.
                 UnitBuilder builder = Util.closestToPoint(this.transform.position, this.cachedBuilders, (entity) => {
                     return entity.getTask().cancelable();
                 });
-                Team team = builder.getTeam();
 
-                // Create the new building GameObject and set it's team.                
-                BuildingBase newBuilding = (BuildingBase)Map.getInstance().spawnEntity(this.buildingToPlace, new Vector3(this.transform.position.x, 0, this.transform.position.z), Quaternion.identity);
-                newBuilding.setTeam(team);
+                if(builder != null) {
+                    Team team = builder.getTeam();
 
-                // Remove resources from the builder's team.
-                int buildingCost = newBuilding.getData().getCost();
-                team.reduceResources(buildingCost);
+                    // Create the new building GameObject and set it's team.                
+                    BuildingBase newBuilding = (BuildingBase)Map.instance().spawnEntity(this.buildingToPlace, new Vector3(this.transform.position.x, 0, this.transform.position.z), Quaternion.identity);
+                    newBuilding.setTeam(team);
 
-                BuildingData bd = newBuilding.getData();
-                if(bd.isInstantBuild()) {
-                    newBuilding.setHealth(bd.getMaxHealth());
-                } else {
-                    builder.setTask(new TaskConstructBuilding(builder, newBuilding));
-                }
+                    // Remove resources from the builder's team.
+                    int buildingCost = newBuilding.getData().getCost();
+                    team.reduceResources(buildingCost);
 
-                if(newBuilding is BuildingWall && team.getResources() >= buildingCost) {
-                    // TODO move outline over?
-                } else {
-                    this.disableOutline();
+                    BuildingData bd = newBuilding.getData();
+                    if (bd.isInstantBuild()) {
+                        newBuilding.setHealth(bd.getMaxHealth());
+                    }
+                    else {
+                        newBuilding.setHealth(1);
+                        builder.setTask(new TaskConstructBuilding(builder, newBuilding));
+                    }
+
+                    if (newBuilding is BuildingWall && team.getResources() >= buildingCost) {
+                        // TODO move outline over?
+                    }
+                    else {
+                        this.disableOutline();
+                    }
                 }
             }
 

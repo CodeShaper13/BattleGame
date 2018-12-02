@@ -8,6 +8,7 @@ using codeshaper.selected;
 using codeshaper.team;
 using codeshaper.util;
 using codeshaper.button;
+using codeshaper.map;
 
 namespace codeshaper {
 
@@ -27,19 +28,24 @@ namespace codeshaper {
         public Text resourceText;
         public Text troopCountText;
         public BuildOutline buildOutline;
+        public Camera mainCamera;
 
-        public SelectedParty party;
+        public SelectedParty selectedParty;
         public SelectedBuilding selectedBuilding;
+        public SelectedDisplayerBase getSelected() {
+            if(this.selectedBuilding.isSelected()) {
+                return this.selectedBuilding;
+            } else {
+                return this.selectedParty;
+            }
+        }
+
+        private ChunkLoader chunkLoader;
+
         public ActionButtonManager actionButtons;
 
-        //TODO not yet implemented
-        /// <summary> Seconds that the left moust button has been down. </summary>
-        public float leftBtnSecondsDown;
-        public Vector2 rectStart;
-
-        // Options
-        public float panSensitivity = 0.4f;
-        public float zoomSensitivity = 500f;
+        public SelectionBox selectionBox;
+        private Options options;
 
         /// <summary>
         /// Returns the instance of the camera mover that this game is using.
@@ -52,10 +58,26 @@ namespace codeshaper {
             CameraMover.singleton = this;
             this.main = Main.instance();
 
+            this.options = new Options();
+
             this.buildOutline = GameObject.Instantiate(References.list.buildOutlinePrefab).GetComponent<BuildOutline>();
 
-            this.team = Team.teamFromEnum(this.objectTeam);
-            this.party.setCameraMover(this);
+            this.team = Team.getTeamFromEnum(this.objectTeam);
+            this.selectedParty.setCameraMover(this);
+
+            this.chunkLoader = new ChunkLoader(Map.instance(), this, 3);
+        }
+
+        private void Update() {
+            // Deselect the selected building if it got destroyed.
+            if(this.selectedBuilding.isSelected() && !Util.isAlive(this.selectedBuilding.getBuilding())) {
+                this.selectedBuilding.clearSelected();
+                this.actionButtons.updateSideButtons();
+            }
+
+            foreach(UnitBase unit in this.selectedParty.getAllUnits()) {
+                //TODO
+            }
         }
 
         private void LateUpdate() {
@@ -86,93 +108,103 @@ namespace codeshaper {
                     }
                 } else {
                     this.handleCameraMovement();
+                    if (!EventSystem.current.IsPointerOverGameObject()) {
+                        // Mouse over the playing field, not UI object.
 
-                    bool leftBtnDown = Input.GetMouseButtonUp(0);
-                    bool rightBtnDown = Input.GetMouseButtonUp(1);
+                        if (this.buildOutline.isEnabled()) {
+                            this.buildOutline.handleClick();
+                        }
+                        else {
+                            this.handlePlayerInput();
+                        }
+                    }
+                }                    
+            }
+            this.updateHudCounts();
 
-                    if (leftBtnDown || rightBtnDown) {
-                        if (!EventSystem.current.IsPointerOverGameObject()) {
-                            // Over the playing field
-                            if(this.buildOutline.isEnabled()) {
-                                this.buildOutline.handleClick(leftBtnDown, rightBtnDown);
-                            } else {
-                                // See this for drawing the select rect:
-                                // https://answers.unity.com/questions/720447/if-game-object-is-in-cameras-field-of-view.html
+            this.chunkLoader.updateChunkLoader();
+        }
 
-                                RaycastHit hit;
-                                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.PositiveInfinity)) {
-                                    SidedObjectEntity entity = hit.transform.gameObject.GetComponent<SidedObjectEntity>();
+        private void handlePlayerInput() {
+            bool leftBtnUp = Input.GetMouseButtonUp(0);
+            bool rightBtnUp = Input.GetMouseButtonUp(1);
 
-                                    if (entity == null) {
-                                        if (leftBtnDown && hit.transform.CompareTag(Tags.ground)) {
-                                            this.actionButtons.closePopupButtons();
-                                            this.party.moveAllTo(hit.point);
-                                        }
-                                    }
-                                    else {
-                                        if (this.actionButtons.delayedButtonRef != null) {
-                                            ActionButtonRequireClick delayedButton = this.actionButtons.delayedButtonRef;
-                                            // Check if this is a valid option to preform the action on.
-                                            if (delayedButton.isValidForAction(this.team, entity)) {
-                                                if (this.selectedBuilding.getBuilding() != null) {
-                                                    delayedButton.callFunction(this.selectedBuilding.getBuilding(), entity);
-                                                }
-                                                else {
-                                                    delayedButton.callFunction(this.party.getAllUnits(), entity);
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            if (entity.getTeam() == this.team) {
-                                                // Clicked something on our team.
-                                                if (leftBtnDown) {
-                                                    this.onLeftBtnClick(entity);
-                                                }
-                                                if (rightBtnDown) {
-                                                    this.onRightBtnClick(entity);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    // A click happened, so if something valid was clicked the delayed action was called.
-                                    // Either way, we should cancel the action becuase it was resolved or the wrong thing was clicked.
-                                    this.actionButtons.cancelDelayedAction();
+            this.selectionBox.updateRect();
+
+            if (leftBtnUp || rightBtnUp) {
+                RaycastHit hit;
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.PositiveInfinity)) {
+                    SidedObjectEntity entity = hit.transform.gameObject.GetComponent<SidedObjectEntity>();
+
+                    if (entity == null) {
+                        // Didn't click anything, move the party to the clicked point.
+                        if (leftBtnUp && hit.transform.CompareTag(Tags.ground)) {
+                            this.actionButtons.closePopupButtons();
+                            this.selectedParty.moveAllTo(hit.point);
+                        }
+                        if(rightBtnUp) {
+                            this.actionButtons.closePopupButtons();
+                            this.getSelected().clearSelected();
+                            // Deselect all selected units.
+                        }
+                    }
+                    else {
+                        // Clicked an Entity
+                        if (this.actionButtons.delayedButtonRef != null) {
+                            ActionButtonRequireClick delayedButton = this.actionButtons.delayedButtonRef;
+                            // Check if this is a valid option to preform the action on.
+                            if (delayedButton.isValidForAction(this.team, entity)) {
+                                if (this.selectedBuilding.getBuilding() != null) {
+                                    delayedButton.callFunction(this.selectedBuilding.getBuilding(), entity);
+                                }
+                                else {
+                                    delayedButton.callFunction(this.selectedParty.getAllUnits(), entity);
+                                }
+                            }
+                        }
+                        else {
+                            if (entity.getTeam() == this.team) {
+                                // Clicked something on our team.
+                                if (leftBtnUp) {
+                                    this.onLeftBtnClick(entity);
+                                }
+                                if (rightBtnUp) {
+                                    this.onRightBtnClick(entity);
                                 }
                             }
                         }
                     }
+                    // A click happened, so if something valid was clicked the delayed action was called.
+                    // Either way, we should cancel the action becuase it was resolved or the wrong thing was clicked.
+                    this.actionButtons.cancelDelayedAction();
                 }
             }
-            this.updateHudCounts();
         }
 
         private void onLeftBtnClick(SidedObjectEntity entity) {
+            this.getSelected().clearSelected();
             if (entity is UnitBase) {
-                this.selectedBuilding.setBuilding(null);
-                this.party.disband();
-                this.party.tryAdd((UnitBase)entity);
+                this.selectedParty.tryAdd((UnitBase)entity);
             } else if (entity is BuildingBase) {
-                this.party.disband();
-                this.selectedBuilding.setBuilding((BuildingBase)entity);
+                this.selectedBuilding.setSelected((BuildingBase)entity);
             }
             this.actionButtons.updateSideButtons();
         }
 
         private void onRightBtnClick(SidedObjectEntity entity) {
             if (entity is UnitBase) {
-                if (this.party.contains((UnitBase)entity)) {
-                    this.party.remove((UnitBase)entity);
+                if (this.selectedParty.contains((UnitBase)entity)) {
+                    this.selectedParty.remove((UnitBase)entity);
                 } else {
-                    this.selectedBuilding.setBuilding(null);
-                    this.party.tryAdd((UnitBase)entity);
+                    this.selectedBuilding.clearSelected();
+                    this.selectedParty.tryAdd((UnitBase)entity);
                 }
-            }
-            else if (entity is BuildingBase) {
+            } else if (entity is BuildingBase) {
                 if(entity == this.selectedBuilding) {
-                    this.selectedBuilding.setBuilding(null);
+                    this.selectedBuilding.clearSelected();
                 } else {
-                    this.party.disband();
-                    this.selectedBuilding.setBuilding((BuildingBase)entity);
+                    this.selectedParty.clearSelected();
+                    this.selectedBuilding.setSelected((BuildingBase)entity);
                 }
             }
             this.actionButtons.updateSideButtons();
@@ -189,7 +221,15 @@ namespace codeshaper {
         /// Centers the camera on the passed position.
         /// </summary>
         public void centerOn(Vector3 pos) {
-            this.transform.parent.position = new Vector3(pos.x, this.transform.parent.position.y, pos.z);
+            this.setPostion(new Vector3(pos.x, this.getPosition().y, pos.z));
+        }
+
+        public void setPostion(Vector3 position) {
+            this.transform.parent.position = position;
+        }
+
+        public Vector3 getPosition() {
+            return this.transform.parent.position;
         }
 
         /// <summary>
@@ -198,7 +238,7 @@ namespace codeshaper {
         public void updateHudCounts() {
             int currentTroopCount = 0;
             int maxResources = this.team.getMaxResourceCount();
-            foreach (SidedObjectEntity o in this.team.getMembers()) {
+            foreach (SidedObjectEntity o in Map.instance().findMapObjects(this.team.predicateThisTeam)) {
                 if (o is UnitBase) {
                     currentTroopCount++;
                 }
@@ -206,11 +246,11 @@ namespace codeshaper {
 
             int max = this.team.getMaxTroopCount();
             this.troopCountText.text = "Troops: " + currentTroopCount + "/" + max;
-            this.troopCountText.fontStyle = (currentTroopCount == max ? FontStyle.Bold : FontStyle.Normal);
+            //this.troopCountText.fontStyle = (currentTroopCount == max ? FontStyle.Bold : FontStyle.Normal);
 
             int res = this.team.getResources();
             this.resourceText.text = "Resources: " + res + "/" + maxResources;
-            this.resourceText.fontStyle = (res == maxResources ? FontStyle.Bold : FontStyle.Normal);
+            //this.resourceText.fontStyle = (res == maxResources ? FontStyle.Bold : FontStyle.Normal);
         }
 
         /// <summary>
@@ -218,14 +258,14 @@ namespace codeshaper {
         /// </summary>
         private void handleCameraMovement() {
             // Move position.
-            float forwardSpeed = (Input.GetAxis("Horizontal") * this.panSensitivity * Time.deltaTime);
-            float sideSpeed = (Input.GetAxis("Vertical") * this.panSensitivity * Time.deltaTime);
+            float forwardSpeed = (Input.GetAxis("Horizontal") * this.options.panSensitivity * Time.deltaTime);
+            float sideSpeed = (Input.GetAxis("Vertical") * this.options.panSensitivity * Time.deltaTime);
             this.transform.parent.Translate(forwardSpeed, 0, sideSpeed);
 
             // Zoom in and out.
             float zoom = Input.GetAxis("Mouse ScrollWheel");
             if (zoom != 0f) {
-                float f = zoom * Time.deltaTime * zoomSensitivity;
+                float f = zoom * Time.deltaTime * this.options.zoomSensitivity;
                 this.transform.Translate(0, 0, f);
 
                 float LOWEST_ZOOM = -12f;

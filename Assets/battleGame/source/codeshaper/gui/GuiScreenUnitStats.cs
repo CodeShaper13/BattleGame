@@ -18,7 +18,7 @@ namespace codeshaper.gui {
 
         public void set(UnitBase unit) {
             UnitStats stats = unit.unitStats;
-            this.nameText.text = stats.getName() + "\n" + unit.getData().getName();
+            this.nameText.text = stats.getName() + "\n" + unit.getData().getUnitTypeName();
             this.statText.text = stats.getFormattedStatString(unit is UnitBuilder);
             stats.dirty = false;
         }

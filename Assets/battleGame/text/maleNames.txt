@@ -3,6 +3,7 @@ Adam
 Albert
 Alford
 Amos
+Andy
 Archibald
 Arthur
 August
@@ -21,6 +22,7 @@ Daniel
 Domingo
 Donald
 Dustyn
+Dylan
 Earl
 Ernest
 Edward
@@ -42,7 +44,10 @@ Kevin
 Kory
 Leonard
 Leroy
+Liam
+Louis
 Mike
+Michael
 Milo
 Murray
 Newton
@@ -54,14 +59,17 @@ Percy
 Ralph
 Randall
 Reuben
-Rudolph
 Sam
 Samuel
 Sigmund
+Shane
+Shawn
 Theodore
+Trent
 Vernon
 Vincent
 Virgil
 Walter
 Weldon
-Will
+William
+Wyatt

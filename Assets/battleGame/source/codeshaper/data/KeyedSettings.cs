@@ -11,7 +11,7 @@ namespace codeshaper.data {
         private readonly bool forceDefaults;
 
         public KeyedSettings(TextAsset textAsset, bool forceDefaults) {
-            List<string> list = FileUtils.readTextAsset(textAsset);
+            List<string> list = FileUtils.readTextAsset(textAsset, false);
             this.dict = new SortedDictionary<string, SettingEntry>();
             this.forceDefaults = forceDefaults;
 
@@ -90,6 +90,7 @@ namespace codeshaper.data {
                     this.dict.Add(key, new SettingEntry(defaultValue, comment));
                 }
             }
+            //TODO update the dict, we always want to overide comments.
             return defaultValue;
         }
 

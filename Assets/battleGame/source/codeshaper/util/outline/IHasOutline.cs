@@ -5,6 +5,6 @@
     /// </summary>
     public interface IHasOutline {
 
-        void setOutlineVisibility(bool visible, EnumOutlineType type);
+        void setOutlineVisibility(bool visible, EnumOutlineParam type);
     }
 }

@@ -4,7 +4,7 @@ namespace codeshaper.entity.unit.special {
 
     public class UnitWarWagon : UnitBase<UnitWarWagon> {
 
-        public override EntityData getData() {
+        public override EntityBaseStats getData() {
             return Constants.ED_WAR_WAGON;
         }
     }

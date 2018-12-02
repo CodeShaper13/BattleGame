@@ -12,7 +12,7 @@ namespace codeshaper.button {
 
         public ActionButtonBuild(string actionName, RegisteredObject obj) : base(actionName) {
             this.setMainActionFunction((unit) => {
-                CameraMover.instance().buildOutline.enableOutline(obj, (UnitBuilder)unit);
+                BuildOutline.instance().enableOutline(obj, (UnitBuilder)unit);
             });
             this.buildingData = obj.getPrefab().GetComponent<BuildingBase>().getData();
             this.buttonText = this.buildingData.getName() + " (" + this.buildingData.getCost() + ")";

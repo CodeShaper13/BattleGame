@@ -2,7 +2,7 @@
 using codeshaper.buildings;
 using codeshaper.button;
 using codeshaper.data;
-using codeshaper.util;
+using codeshaper.nbt;
 
 namespace codeshaper.entity.unit {
 
@@ -20,14 +20,6 @@ namespace codeshaper.entity.unit {
             return i;
         }
 
-        protected override void onUpdate() {
-            base.onUpdate();
-        }
-
-        public bool canCarryMore() {
-            return this.heldResources < this.getHoldLimit();
-        }
-
         public void increaseResources(int amount) {
             // TEMP resources are deposited directly into the general bank.
             //this.resources += amount;
@@ -36,7 +28,7 @@ namespace codeshaper.entity.unit {
             this.unitStats.resourcesCollected.increase(amount);
         }
 
-        public override EntityData getData() {
+        public override EntityBaseStats getData() {
             return Constants.ED_BUILDER;
         }
 
@@ -62,6 +54,10 @@ namespace codeshaper.entity.unit {
 
         public int getHoldLimit() {
             return Constants.BUILDER_MAX_CARRY;
+        }
+
+        public bool canHoldMore() {
+            return this.heldResources < this.getHoldLimit();
         }
     }
 }

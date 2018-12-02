@@ -1,5 +1,5 @@
 ﻿using codeshaper.buildings;
-using codeshaper.team;
+using System;
 using UnityEngine;
 
 namespace codeshaper.entity.unit.task {
@@ -21,7 +21,7 @@ namespace codeshaper.entity.unit.task {
         /// Returns the closest enemy object to this unit, or null if there are none in range.
         /// </summary>
         protected T findEntityOfType<T>(float maxDistance) where T : SidedObjectEntity {
-            return this.findEntityOfType<T>(this.unit.getPos(), maxDistance);
+            return this.findEntityOfType<T>(this.unit.getFootPos(), maxDistance);
         }
 
         /// <summary>
@@ -30,17 +30,13 @@ namespace codeshaper.entity.unit.task {
         protected T findEntityOfType<T>(Vector3 point, float maxDistance = -1, bool findEnemies = true) where T : SidedObjectEntity {
             SidedObjectEntity obj = null;
             float f = float.PositiveInfinity;
-            Team thisTeam = this.unit.getTeam();
-            foreach (Team team in Team.ALL_TEAMS) {
-                if (findEnemies ? team != thisTeam : team == thisTeam) {
-                    foreach (SidedObjectEntity s in team.getMembers()) {
-                        if (s is T && !s.isDead()) {
-                            float dis = Vector3.Distance(point, s.transform.position);
-                            if ((dis < f) && (maxDistance == -1 || dis < maxDistance)) {
-                                obj = s;
-                                f = dis;
-                            }
-                        }
+            Predicate<MapObject> predicate = (findEnemies ? this.unit.getTeam().predicateOtherTeam : this.unit.getTeam().predicateThisTeam);
+            foreach (SidedObjectEntity s in this.unit.map.findMapObjects(predicate)) {
+                if (s is T && !s.isDead()) {
+                    float dis = Vector3.Distance(point, s.transform.position);
+                    if ((dis < f) && (maxDistance == -1 || dis < maxDistance)) {
+                        obj = s;
+                        f = dis;
                     }
                 }
             }
@@ -58,7 +54,11 @@ namespace codeshaper.entity.unit.task {
         /// Returns the distance between this unit and the passed MapObject.
         /// </summary>
         protected float getDistance(MapObject other) {
-            return Vector3.Distance(this.unit.getPos(), other.getPos());
+            return Vector3.Distance(this.unit.getFootPos(), other.getPos());
+        }
+
+        protected float getDistance(Vector3 point) {
+            return Vector3.Distance(this.unit.getFootPos(), point);
         }
 
         /// <summary>

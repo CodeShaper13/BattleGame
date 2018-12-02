@@ -5,6 +5,8 @@ using codeshaper.ui;
 using codeshaper.util.outline;
 using UnityEngine;
 using UnityEngine.UI;
+using codeshaper.button;
+using System;
 
 namespace codeshaper.selected {
 
@@ -32,22 +34,22 @@ namespace codeshaper.selected {
                 if(this.selected is BuildingQueuedProducerBase) {
                     BuildingQueuedProducerBase producer = (BuildingQueuedProducerBase)this.selected;
 
-                    EntityData ed;
+                    EntityBaseStats ed;
                     float trainTime = 0;
-                    int queueSize = producer.trainingQueue.Count;
+                    int queueCount = producer.trainingQueue.Count;
                     for(int i = 0; i < 3; i++) {
-                        if(i < queueSize) {
+                        if(i < queueCount) {
                             ed = producer.trainingQueue[i].getPrefab().GetComponent<UnitBase>().getData();
                             if (i == 0) {
                                 trainTime = ed.getProductionTime();
                             }
-                            this.icons[i].setText(ed.getName());
+                            this.icons[i].setText(ed.getUnitTypeName());
                         } else {
                             this.icons[i].setText(null);
                         }
                     }
 
-                    this.otherText.text = queueSize == 0 ? "Empty" : Mathf.Floor(trainTime - producer.getTrainingProgress()) + 1 + " Seconds";
+                    this.otherText.text = queueCount == 0 ? "Empty" : Mathf.Floor(trainTime - producer.getTrainingProgress()) + 1 + " Seconds";
                 }
                 else if(this.selected is IResourceHolder) {
                     IResourceHolder holder = (IResourceHolder)this.selected;
@@ -62,36 +64,46 @@ namespace codeshaper.selected {
             }
         }
 
-        /// <summary>
-        /// Sets the selected building.  Pass null to deselect the current building (if there is one).
-        /// </summary>
-        public void setBuilding(BuildingBase building) {
-            if(this.selected != null && !this.selected.isDead()) {
-                this.selected.setOutlineVisibility(false, EnumOutlineType.SELECTED);
+        public override int getMask() {
+            return this.selected.getButtonMask();
+        }
+
+        public override void callFunctionOn(ActionButton actionButton) {
+            actionButton.callFunction(this.selected);
+        }
+
+        public override void clearSelected() {
+            if (this.selected != null) {
+                this.selected.setOutlineVisibility(false, EnumOutlineParam.SELECTED);
+            }
+            this.selected = null;
+            this.setUIVisible(false);
+        }
+
+        public void setSelected(BuildingBase entity) {
+            this.clearSelected();
+
+            if (entity != null) {
+                this.selected = entity;
+                this.selected.setOutlineVisibility(true, EnumOutlineParam.SELECTED);
             }
 
-            if(building != null) {
-                this.selected = building;
-                this.selected.setOutlineVisibility(true, EnumOutlineType.SELECTED);
-            }
-            else {
-                this.selected = null;
-            }
+            this.setUIVisible(this.selected != null);
 
-            // Building specific setup.
+
+            // UI setup for specific buildings.
             if (this.selected is BuildingQueuedProducerBase) {
                 BuildingQueuedProducerBase producer = (BuildingQueuedProducerBase)this.selected;
                 int slots = producer.getQueueSize();
                 for (int i = 0; i < 3; i++) {
                     this.icons[i].setVisible(i < slots);
                 }
-            } else {
-                for(int i = 0; i < this.icons.Length; i++) {
+            }
+            else {
+                for (int i = 0; i < this.icons.Length; i++) {
                     this.icons[i].setVisible(false);
                 }
             }
-
-            this.setVisible(this.selected != null);
         }
 
         /// <summary>

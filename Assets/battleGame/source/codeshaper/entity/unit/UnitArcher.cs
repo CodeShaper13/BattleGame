@@ -5,7 +5,7 @@ namespace codeshaper.entity.unit {
 
     public class UnitArcher : UnitFighting {
 
-        public override EntityData getData() {
+        public override EntityBaseStats getData() {
             return Constants.ED_ARCHER;
         }
 

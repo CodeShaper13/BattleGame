@@ -9,7 +9,7 @@ namespace codeshaper.gui {
         public Text creditText;
 
         public override void onGuiInit() {
-            List<string> lines = FileUtils.readTextAsset(References.list.textCredits);
+            List<string> lines = FileUtils.readTextAsset(References.list.textCredits, true);
             string s = string.Empty;
             foreach(string s1 in lines) {
                 s += s1;

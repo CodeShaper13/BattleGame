@@ -1,11 +1,10 @@
 ﻿using codeshaper.buildings;
 
-namespace codeshaper.entity.unit.task {
+namespace codeshaper.entity.unit.task.builder {
 
     public class TaskConstructBuilding : TaskRepair {
 
         public TaskConstructBuilding(UnitBuilder unit, BuildingBase newBuilding) : base(unit, newBuilding, true) {
-            this.building.setHealth(1);
             this.building.setConstructing();
 
             this.unit.unitStats.buildingsBuilt.increase();
@@ -17,7 +16,6 @@ namespace codeshaper.entity.unit.task {
 
         protected override bool shouldContinue() {
             return this.building.isConstructing();
-
         }
     }
 }

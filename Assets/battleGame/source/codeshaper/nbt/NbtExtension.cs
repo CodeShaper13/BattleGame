@@ -2,9 +2,11 @@
 using System;
 using UnityEngine;
 
-namespace codeshaper.util {
+namespace codeshaper.nbt {
 
     public static class NbtExtension {
+
+        #region setters:
 
         public static void setTag(this NbtCompound tag, string name, bool value) {
             tag.setTag(name, value ? (byte)1 : (byte)0);
@@ -18,9 +20,9 @@ namespace codeshaper.util {
             tag.Add(new NbtByteArray(name, value));
         }
 
-        public static void setTag(this NbtCompound tag, string name, NbtCompound value) {
-            tag.Add(new NbtCompound(name, value));
-        }
+        //public static void setTag(this NbtCompound tag, string name, NbtCompound value) {
+        //    tag.Add(new NbtCompound(name, value));
+        //}
 
         public static void setTag(this NbtCompound tag, string name, double value) {
             tag.Add(new NbtDouble(name, value));
@@ -59,7 +61,42 @@ namespace codeshaper.util {
             tag.Add(new NbtString(name, value.ToString()));
         }
 
+        /// <summary>
+        /// Writes the passed Vector2 to the passed tag.
+        /// </summary>
+        public static void setTag(this NbtCompound tag, string name, Vector2 vector) {
+            NbtCompound compound = new NbtCompound(name);
+            compound.setTag("x", vector.x);
+            compound.setTag("y", vector.y);
+            tag.Add(compound);
+        }
 
+        /// <summary>
+        /// Writes the passed Vector3 to the passed tag.
+        /// </summary>
+        public static void setTag(this NbtCompound tag, string name, Vector3 vector) {
+            NbtCompound compound = new NbtCompound(name);
+            compound.setTag("x", vector.x);
+            compound.setTag("y", vector.y);
+            compound.setTag("z", vector.z);
+            tag.Add(compound);
+        }
+
+        /// <summary>
+        /// Writes the passed Quaternion to the passed tag.
+        /// </summary>
+        public static void setTag(this NbtCompound tag, string name, Quaternion quaternion) {
+            NbtCompound compound = new NbtCompound(name);
+            compound.setTag("w", quaternion.w);
+            compound.setTag("x", quaternion.x);
+            compound.setTag("y", quaternion.y);
+            compound.setTag("z", quaternion.z);
+            tag.Add(compound);
+        }
+
+        #endregion
+
+        #region getters:
 
         public static bool getBool(this NbtCompound tag, string name, bool defaultValue = false) {
             return tag.getByte(name, defaultValue ? (byte)1 : (byte)0) == 1;
@@ -175,34 +212,54 @@ namespace codeshaper.util {
         }
 
         /// <summary>
-        /// Returns null if no tag could be found.
+        /// Returns Guid.Empty if no tag could be found.
         /// </summary>
-        public static Guid? getGuid(this NbtCompound tag, string name, Guid? defaultValue = null) {
+        public static Guid getGuid(this NbtCompound tag, string name, Guid? defaultValue = null) {
             NbtString tag1 = tag.Get<NbtString>(name);
             if (tag1 == null) {
-                return defaultValue;
+                return defaultValue == null ? Guid.Empty : (Guid)defaultValue;
             }
             else {
                 return new Guid(tag1.Value);
             }
         }
 
+        public static Vector2 getVector2(this NbtCompound tag, string name, Vector2? defaultValue = null) {
+            if(defaultValue == null) {
+                defaultValue = Vector2.zero;
+            }
 
-        /// <summary>
-        /// Writes the passed Vector3 to the passed tag, appending "x", "y" and "z" to the prefix to get the tag name.
-        /// </summary>
-        public static NbtCompound setTag(this NbtCompound tag, string name, Vector3 vector) {
-            tag.setTag(name + "_x", vector.x);
-            tag.setTag(name + "_y", vector.y);
-            tag.setTag(name + "_z", vector.z);
-            return tag;
+            NbtCompound compound = tag.getCompound(name);
+            return new Vector2(
+                compound.getFloat("x", ((Vector3)defaultValue).x),
+                compound.getFloat("y", ((Vector3)defaultValue).y));
         }
 
-        public static Vector3 getVector3(this NbtCompound tag, string name) {
+        public static Vector3 getVector3(this NbtCompound tag, string name, Vector3? defaultValue = null) {
+            if(defaultValue == null) {
+                defaultValue = Vector3.zero;
+            }
+
+            NbtCompound compound = tag.getCompound(name);
             return new Vector3(
-                tag.getFloat(name + "_x"),
-                tag.getFloat(name + "_y"),
-                tag.getFloat(name + "_z"));
+                compound.getFloat("x", ((Vector3)defaultValue).x),
+                compound.getFloat("y", ((Vector3)defaultValue).y),
+                compound.getFloat("z", ((Vector3)defaultValue).z));
         }
+
+        public static Quaternion getQuaternion(this NbtCompound tag, string name, Quaternion? defaultValue = null) {
+            if(defaultValue == null) {
+                defaultValue = Quaternion.identity;
+            }
+
+            NbtCompound compound = tag.getCompound(name);
+            return new Quaternion(
+                compound.getFloat("w", ((Quaternion)defaultValue).w),
+                compound.getFloat("x", ((Quaternion)defaultValue).x),
+                compound.getFloat("y", ((Quaternion)defaultValue).y),
+                compound.getFloat("z", ((Quaternion)defaultValue).z));
+        }
+
+        #endregion
     }
 }

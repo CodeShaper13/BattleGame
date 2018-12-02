@@ -32,6 +32,13 @@ namespace codeshaper {
         // Projectile Prefabs.
         public GameObject projectileArrow;
 
+        // Harvestable Prefabs.
+        public GameObject harvestableTreePrefab;
+        public GameObject harvestableDeadTreePrefab;
+        public GameObject harvestableCactusPrefab;
+        public GameObject harvestableRockPrefab;
+        public GameObject harvestableSkullPrefab;
+
         // Building Prefabs.
         public GameObject buildingCamp;
         public GameObject buildingProducer;
@@ -52,5 +59,7 @@ namespace codeshaper {
         public GuiBase guiLevelWinObject;
         public GuiBase guiFindUnlockableObject;
         public GuiBase guiTitleScreenObject;
+
+        public GameObject chunkPrefab;
     }
 }

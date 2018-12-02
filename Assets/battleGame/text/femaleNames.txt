@@ -4,6 +4,7 @@ Agnes
 Alice
 Amber
 Anna
+Ashley
 Ava
 Beatrice
 Beth
@@ -47,6 +48,7 @@ Rose
 Ruby
 Sabrina
 Sasha
+Shauna
 Sophia
 Summer
 Wanda

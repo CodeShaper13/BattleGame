@@ -1,13 +1,12 @@
 ﻿using fNbt;
-using codeshaper.util;
 using codeshaper.data;
 using codeshaper.entity.unit;
 using UnityEngine;
 using codeshaper.registry;
 using codeshaper.entity.projectiles;
 using codeshaper.entity;
-using codeshaper.team;
 using System;
+using codeshaper.nbt;
 
 namespace codeshaper.buildings {
 
@@ -16,7 +15,7 @@ namespace codeshaper.buildings {
         private UnitBase target;
         private float fireCooldown;
 
-        protected override void onUpdate() {
+        public override void onUpdate() {
             base.onUpdate();
 
             this.fireCooldown -= Time.deltaTime;
@@ -50,9 +49,9 @@ namespace codeshaper.buildings {
             base.readFromNbt(tag);
 
             this.fireCooldown = tag.getFloat("fireCooldown");
-            SidedObjectEntity soe = this.map.getSidedObjectFromGuid((Guid)tag.getGuid("targetGuid"));
-            if(soe is UnitBase) {
-                this.target = (UnitBase)soe;
+            MapObject obj = this.map.findMapObjectFromGuid(tag.getGuid("targetGuid"));
+            if(obj is UnitBase) {
+                this.target = (UnitBase)obj;
             } else {
                 this.target = null;
             }
@@ -77,16 +76,12 @@ namespace codeshaper.buildings {
         private UnitBase findUnit() {
             UnitBase obj = null;
             float f = float.PositiveInfinity;
-            foreach (Team t in Team.ALL_TEAMS) {
-                if (t != this.getTeam()) {
-                    foreach (SidedObjectEntity s in t.getMembers()) {
-                        if (s is UnitBase) {
-                            float dis = Vector3.Distance(this.transform.position, s.transform.position);
-                            if ((dis < f) && dis < Constants.BUILDING_TOWER_SEE_RANGE) {
-                                obj = (UnitBase)s;
-                                f = dis;
-                            }
-                        }
+            foreach (SidedObjectEntity s in this.map.findMapObjects(this.getTeam().predicateOtherTeam)) {
+                if (s is UnitBase) {
+                    float dis = Vector3.Distance(this.transform.position, s.transform.position);
+                    if ((dis < f) && dis < Constants.BUILDING_TOWER_SEE_RANGE) {
+                        obj = (UnitBase)s;
+                        f = dis;
                     }
                 }
             }

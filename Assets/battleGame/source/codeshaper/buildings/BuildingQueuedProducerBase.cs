@@ -1,7 +1,7 @@
 ﻿using codeshaper.entity;
 using codeshaper.entity.unit;
+using codeshaper.nbt;
 using codeshaper.registry;
-using codeshaper.util;
 using fNbt;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +11,6 @@ namespace codeshaper.buildings {
     public abstract class BuildingQueuedProducerBase : BuildingBase {
 
         private float trainingProgress;
-
         public List<RegisteredObject> trainingQueue;
 
         protected override void onAwake() {
@@ -73,7 +72,7 @@ namespace codeshaper.buildings {
 
             NbtList list = tag.getList("trainingQueue");
             foreach (NbtInt integer in list) {
-                this.trainingQueue.Add(Registry.getObjectfromRegistry(integer.Value));
+                this.trainingQueue.Add(Registry.getObjectFromRegistry(integer.Value));
             }
         }
 

@@ -19,32 +19,36 @@ namespace codeshaper.entity.unit.task.builder {
             base.drawDebug();
 
             // Draw lines to the target and drop off point.
-            bool flag = this.unit.canCarryMore();
+            bool flag = this.unit.canHoldMore();
             if(Util.isAlive(this.target)) {
-                GLDebug.DrawLine(this.unit.getPos(), this.target.getPos(), flag ? Color.green : Color.red);
+                GLDebug.DrawLine(this.unit.getPos(), this.target.getPos() + Vector3.up, this.func() ? Colors.green : Colors.red);
             }
             if(this.dropoffPoint != null) {
-                GLDebug.DrawLine(this.unit.getPos(), this.dropoffPoint.getPos(), flag ? Color.red : Color.green);
+                GLDebug.DrawLine(this.unit.getPos(), this.dropoffPoint.getPos(), flag ? Colors.red : Colors.green);
             }
+        }
+
+        private bool func() {
+            return this.getDistance(this.target) <= (this.unit.getSizeRadius() + this.target.getSizeRadius() + 0.5f);
         }
 
         public override bool preform() {
             this.cooldown -= Time.deltaTime;
 
-            if(this.unit.canCarryMore()) {
+            if(this.unit.canHoldMore()) {
                 // Find something to harvest.
                 if (this.target == null) {
-                    this.target = this.findTarget();
+                    this.target = (HarvestableObject)this.unit.map.getClosestObject(this.unit.getFootPos(), HarvestableObject.predicateIsHarvestable);
+                }
 
-                    if (this.target == null) {
-                        return false; // No target to be found, stop executing.
-                    } else {
-                        this.moveHelper.setDestination(this.target.transform.position, this.target.getSizeRadius() + this.unit.getSizeRadius());
-                    }
+                if (this.target == null) {
+                    return false; // No target to be found, stop executing.
+                } else {
+                    this.moveHelper.setDestination(this.target);
                 }
 
                 // Harvest from the nearby object if it is in range.
-                if (this.cooldown <= 0 && Vector3.Distance(this.unit.getPos(), this.target.transform.position) <= (this.unit.getSizeRadius() + this.target.getSizeRadius())) {
+                if (this.cooldown <= 0 && this.func()) {
                     if(this.target.harvest(this.unit)) {
                         // Target was consumed.
                         this.target = null; 
@@ -63,26 +67,10 @@ namespace codeshaper.entity.unit.task.builder {
                     } else {
                        // this.setDestination
                     }
-                }                
+                }
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Finds a harvestable object that the builder can harvest and returns it.
-        /// </summary>
-        private HarvestableObject findTarget() {
-            HarvestableObject obj = null;
-            float f = float.PositiveInfinity;
-            foreach (HarvestableObject h in this.unit.map.getAllHarvestableObjects()) {
-                float dis = Vector3.Distance(this.unit.transform.position, h.transform.position);
-                if (dis < f) {
-                    obj = h;
-                    f = dis;
-                }
-            }
-            return obj;
         }
     }
 }

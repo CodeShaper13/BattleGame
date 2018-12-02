@@ -20,7 +20,7 @@ namespace codeshaper.entity.unit.stats {
 
         public Names(TextAsset text) {
             this.textAsset = text;
-            this.names = FileUtils.readTextAsset(this.textAsset).ToArray(); ;
+            this.names = FileUtils.readTextAsset(this.textAsset, true).ToArray();
         }
 
         /// <summary>

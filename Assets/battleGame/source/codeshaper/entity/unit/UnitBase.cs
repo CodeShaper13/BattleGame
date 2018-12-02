@@ -3,9 +3,9 @@ using codeshaper.buildings;
 using codeshaper.data;
 using codeshaper.entity.unit.stats;
 using codeshaper.entity.unit.task;
-using codeshaper.util;
 using UnityEngine;
 using codeshaper.entity.unit.task.attack;
+using codeshaper.nbt;
 
 namespace codeshaper.entity.unit {
 
@@ -14,7 +14,6 @@ namespace codeshaper.entity.unit {
         private ITask task;
         public AttackBase attack;
         public MoveHelper moveHelper;
-        public Plane[] planes;
 
         private Vector3? overrideMovementDestination;
         private float overrideMovementStopDis;
@@ -26,34 +25,28 @@ namespace codeshaper.entity.unit {
         protected override void onAwake() {
             base.onAwake();
 
-            this.unitStats = new UnitStats(); //TODO don't generate all the stuff if this unit is being loaded from a file.
-            this.moveHelper = new MoveHelper(this);
-            this.lastPos = this.transform.position;
-
             this.attack = this.createAttackMethod();
+            this.lastPos = this.transform.position;
+        }
 
+        protected override void onStart() {
+            base.onStart();
+
+            this.moveHelper = new MoveHelper(this);
             this.setTask(null);
         }
 
-        protected override void onUpdate() {
+        public override void onUpdate() {
             base.onUpdate();
 
-            // Draw a debug arrow pointing forward.
-            if(Main.DEBUG) {
-                GLDebug.DrawLineArrow(this.getPos(), this.getPos() + this.transform.forward, 0.25f, 20, Color.blue, 0, true);
-                this.moveHelper.drawDebug();
-            }
-
             if(this.overrideMovementDestination != null) {
-                if(Vector3.Distance(this.getPos(), (Vector3)this.overrideMovementDestination) <= this.overrideMovementStopDis + 1.25f) {
+                if(Vector3.Distance(this.getFootPos(), (Vector3)this.overrideMovementDestination) <= this.overrideMovementStopDis + 0.5f) {
                     this.overrideMovementDestination = null;
                 }
             } else if (this.task != null) {
-                if(Main.DEBUG) {
-                    this.task.drawDebug();
-                }
-                if (!this.task.preform()) {
-                    this.setTask(null); // Set unit to idle.
+                bool continueExecuting = this.task.preform();
+                if (!continueExecuting) {
+                    this.setTask(null, true); // Set unit to idle.
                 }
             }
 
@@ -66,11 +59,34 @@ namespace codeshaper.entity.unit {
             this.unitStats.timeAlive.increase(Time.deltaTime);
         }
 
+        public override void drawDebug() {
+            base.drawDebug();
+
+            // Draw a debug arrow pointing forward.
+            GLDebug.DrawLineArrow(this.getPos(), this.getPos() + this.transform.forward, 0.25f, 20, Color.blue, 0, true);
+            this.moveHelper.drawDebug();
+
+            if(this.overrideMovementDestination == null && this.task != null) {
+                this.task.drawDebug();
+            }
+        }
+
+        public override void onInitialConstruct() {
+            base.onInitialConstruct();
+
+            this.unitStats = new UnitStats(this.getData());
+        }
+
+        protected override void colorUnit() {
+            this.transform.GetChild(0).GetComponent<MeshRenderer>().material.color = this.getTeam().getColor();
+        }
+
         public override bool damage(MapObject dealer, int amount) {
+            amount = Mathf.RoundToInt(amount * (this.unitStats.getDefense() / Constants.BASE_DEFENSE_VALUE));
             this.unitStats.damageTaken.increase(amount);
-            bool flag = base.damage(dealer, amount);
+            bool killedByDamage = base.damage(dealer, amount);
             this.task.onDamage(dealer);
-            return flag;
+            return killedByDamage;
         }
 
         public override void onDeathCallback() {
@@ -79,29 +95,37 @@ namespace codeshaper.entity.unit {
             // Hacky way to remove unit from the party.
             CameraMover cm = CameraMover.instance();
             if(cm.getTeam() == this.getTeam()) {
-                cm.party.remove(this);
+                cm.selectedParty.remove(this);
             }
 
             GameObject.Destroy(this.gameObject);
         }
 
-        public abstract EntityData getData();
+        public abstract EntityBaseStats getData();
 
         /// <summary>
         /// Sets the units task.  Pass null to set the current task to idle.
         /// </summary>
-        public void setTask(ITask newTask) {
+        public void setTask(ITask newTask, bool forceCancelPrevious = false) {
             // Explicitly setting a task while a unit is moving stops it's walk.
             this.overrideMovementDestination = null;
 
-            if(this.task == null || (this.task != null && this.task.cancelable())) {
-                // IF there is an old task, call finish on the instance.
+            if(this.task == null || (forceCancelPrevious || (this.task != null && this.task.cancelable()))) {
+                // If there is an old task, call finish on the instance.
                 if(this.task != null) {
                     this.task.onFinish();
                 }
 
                 this.task = (newTask == null) ? new TaskIdle(this) : newTask;
             }
+        }
+
+        /// <summary>
+        /// Returns the exact position of the middle of the unit at it's feet.
+        /// </summary>
+        /// <returns></returns>
+        public Vector3 getFootPos() {
+            return this.transform.position + Vector3.down;
         }
 
         /// <summary>
@@ -112,22 +136,24 @@ namespace codeshaper.entity.unit {
         }
 
         /// <summary>
-        /// Moves a unit to a certain point.  This overrides their current task.
+        /// Moves a unit to a certain point.  This overrides their current task as long as it is cancelable.
         /// </summary>
         public void walkToPoint(Vector3 point, int partySize) {
-            this.overrideMovementStopDis = partySize <= 1 ? 0f : (partySize <= 3 ? 1f : 3f); // TODO spread out stopping points.
-            this.overrideMovementDestination = point;
+            if(this.task.cancelable()) {
+                this.overrideMovementStopDis = partySize <= 1 ? 0f : (partySize <= 3 ? 1f : 3f); // TODO spread out stopping points.
+                this.overrideMovementDestination = point;
 
-            // Move the units to the destination, making sure they don't pile to close.
-            this.moveHelper.setDestination(point, this.overrideMovementStopDis);
+                // Move the units to the destination, making sure they don't pile to close.
+                this.moveHelper.setDestination(point, this.overrideMovementStopDis);
+            }
         }
 
         public override float getSizeRadius() {
-            return 0.65f;
+            return 0.5f;
         }
 
         public override int getMaxHealth() {
-            return this.getData().getHealth();
+            return this.unitStats.getMaxHealth();
         }
 
         public virtual AttackBase createAttackMethod() {
@@ -142,7 +168,13 @@ namespace codeshaper.entity.unit {
             base.readFromNbt(tag);
 
             this.lastPos = tag.getVector3("lastPos");
-            this.unitStats.readFromNbt(tag);
+            this.unitStats = new UnitStats(tag, this.getData());
+
+            bool flag = tag.getBool("hasMovementOverride");
+            if(flag) {
+                this.overrideMovementDestination = tag.getVector3("overrideMovementDestination");
+                this.overrideMovementStopDis = tag.getFloat("overrideMovementStopDis");
+            }
         }
 
         public override void writeToNbt(NbtCompound tag) {
@@ -150,6 +182,12 @@ namespace codeshaper.entity.unit {
 
             tag.setTag("lastPos", this.lastPos);
             this.unitStats.writeToNBT(tag);
+
+            tag.setTag("hasMovementOverride", this.overrideMovementDestination != null);
+            if(this.overrideMovementDestination != null) {
+                tag.setTag("overrideMovementDestination", (Vector3)this.overrideMovementDestination);
+                tag.setTag("overrideMovementStopDis", this.overrideMovementStopDis);
+            }
         }
 
         /// <summary>
@@ -157,7 +195,7 @@ namespace codeshaper.entity.unit {
         /// This method will also increase stats if needed.
         /// </summary>
         public SidedObjectEntity damageTarget(SidedObjectEntity obj) {
-            int damage = this.getData().getDamageDelt();
+            int damage = this.unitStats.getAttack();
             this.unitStats.damageDelt.increase(damage);
 
             if(obj.damage(this, damage)) {

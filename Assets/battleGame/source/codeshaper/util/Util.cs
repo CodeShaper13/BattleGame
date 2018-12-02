@@ -1,7 +1,6 @@
 ﻿using codeshaper.entity;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 namespace codeshaper.util {
@@ -29,33 +28,25 @@ namespace codeshaper.util {
         /// <typeparam name="T"></typeparam>
         /// <param name="point">The point to compare the entity's point to.</param>
         /// <param name="list"></param>
-        /// <param name="validOptionFunc">If not null, this function is called on every entity
+        /// <param name="validPredicate">If not null, this function is called on every entity
         /// in the list.  If this function returns false the entity is not considered to be in
         /// the running for the closest.</param>
         /// <returns></returns>
-        public static T closestToPoint<T>(Vector3 point, IEnumerable<T> list, Func<T, bool> validOptionFunc) where T : MapObject {
+        public static T closestToPoint<T>(Vector3 point, IEnumerable<T> list, Predicate<T> validPredicate) where T : MapObject {
             T bestTarget = null;
             float closestDistanceSqr = Mathf.Infinity;
+            float dis;
             foreach (T obj in list) {
-                Vector3 directionToTarget = obj.getPos() - point;
-                float dSqrToTarget = directionToTarget.sqrMagnitude;
-                if (dSqrToTarget < closestDistanceSqr) {
-                    if(validOptionFunc != null && !validOptionFunc(obj)) {
+                dis = Vector3.Distance(point, obj.getPos());
+                if (dis < closestDistanceSqr) {
+                    if(validPredicate != null && !validPredicate(obj)) {
                         continue;
                     }
-                    closestDistanceSqr = dSqrToTarget;
                     bestTarget = obj;
+                    closestDistanceSqr = dis;
                 }
             }
-
             return bestTarget;
-        }
-
-        /// <summary>
-        /// Returns true if a save game exists.
-        /// </summary>
-        public static bool doesSaveExists() {
-            return Directory.Exists(Main.SAVE_PATH);
         }
     }
 }

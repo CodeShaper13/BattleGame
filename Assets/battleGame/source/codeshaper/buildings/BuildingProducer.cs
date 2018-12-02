@@ -1,5 +1,5 @@
 ﻿using codeshaper.data;
-using codeshaper.util;
+using codeshaper.nbt;
 using fNbt;
 using UnityEngine;
 
@@ -58,6 +58,10 @@ namespace codeshaper.buildings {
 
         public int getHoldLimit() {
             return Constants.BUILDING_PRODUCER_MAX_HOLD;
+        }
+
+        public bool canHoldMore() {
+            return this.heldResources < this.getHoldLimit();
         }
     }
 }

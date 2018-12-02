@@ -1,5 +1,6 @@
 ﻿using codeshaper.save;
 using codeshaper.util;
+using UnityEditor;
 using UnityEngine.UI;
 
 namespace codeshaper.gui {
@@ -11,7 +12,7 @@ namespace codeshaper.gui {
         private bool saveFileExists;
 
         public override void onGuiInit() {
-            this.saveFileExists = Util.doesSaveExists();
+            this.saveFileExists = FileUtils.doesSaveExists();
 
             this.firstBtnText.text = this.saveFileExists ? "Continue" : "Start New Game";
         }

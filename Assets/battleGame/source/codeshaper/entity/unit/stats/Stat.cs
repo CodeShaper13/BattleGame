@@ -1,10 +1,11 @@
-﻿using codeshaper.util;
+﻿using codeshaper.nbt;
+using codeshaper.util;
 using fNbt;
 using System;
 
 namespace codeshaper.entity.unit.stats {
 
-    public abstract class Stat<T> {
+    public abstract class Stat<T> : INbtSerializable {
 
         protected string displayName;
         protected string saveName;
@@ -25,9 +26,13 @@ namespace codeshaper.entity.unit.stats {
             this.unitStats.dirty = true;
         }
 
-        public abstract void read(NbtCompound tag);
+        public abstract void readFromNbt(NbtCompound tag);
 
-        public abstract void write(NbtCompound tag);
+        public abstract void writeToNbt(NbtCompound tag);
+
+        public string getDisplayName() {
+            return this.displayName;
+        }
 
         public override string ToString() {
             return this.displayName + ": " + this.value.ToString();
@@ -43,11 +48,11 @@ namespace codeshaper.entity.unit.stats {
             this.value += amount;
         }
 
-        public override void read(NbtCompound tag) {
+        public override void readFromNbt(NbtCompound tag) {
             this.value = tag.getInt(this.saveName);
         }
 
-        public override void write(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             tag.setTag(this.saveName, this.value);
         }
     }
@@ -61,11 +66,11 @@ namespace codeshaper.entity.unit.stats {
             this.value += amount;
         }
 
-        public override void read(NbtCompound tag) {
+        public override void readFromNbt(NbtCompound tag) {
             this.value = tag.getFloat(this.saveName);
         }
 
-        public override void write(NbtCompound tag) {
+        public override void writeToNbt(NbtCompound tag) {
             tag.setTag(this.saveName, this.value);
         }
     }

@@ -12,20 +12,22 @@
         #endregion
 
         #region Units:
-        public static readonly EntityData ED_BUILDER = new EntityData("Builder", 35, 25, 5, 45f);
-        public static readonly EntityData ED_SOLDIER = new EntityData("Soldier", 75, 25, 5, 1f);
-        public static readonly EntityData ED_ARCHER = new EntityData("Archer", 50, 25, 5, 15f);
-        public static readonly EntityData ED_HEAVY = new EntityData("Heavy", 100, 25, 5, 25f);
+        public static readonly EntityBaseStats ED_BUILDER = new EntityBaseStats("Builder", 35, 3.5f, 5, 10, 25, 45f);
+        public static readonly EntityBaseStats ED_SOLDIER = new EntityBaseStats("Soldier", 75, 3.5f, 5, 10, 25, 1f);
+        public static readonly EntityBaseStats ED_ARCHER = new EntityBaseStats("Archer",  50, 3.5f, 5, 10, 25, 15f);
+        public static readonly EntityBaseStats ED_HEAVY = new EntityBaseStats("Heavy", 100, 3.5f, 5, 10, 25, 25f);
 
-        public static readonly EntityData ED_WAR_WAGON = new EntityData("War Wagon", 500, 100, 3, 60f);
-        public static readonly EntityData ED_CANNON = new EntityData("Cannon", 150, 100, 200, 45f);
+        public static readonly EntityBaseStats ED_WAR_WAGON = new EntityBaseStats("War Wagon", 500, 3.5f, 3, 10, 100, 60f);
+        public static readonly EntityBaseStats ED_CANNON = new EntityBaseStats("Cannon", 150, 3.5f, 200, 10, 100, 45f);
+
+        // Only a float to prevent casting in math operations.
+        public static float BASE_DEFENSE_VALUE = 10;
 
         // Builder
         public static int BUILDER_MAX_CARRY;
         public static int BUILDER_COLLECT_PER_STRIKE;
         public static float BUILDER_STRIKE_RATE;
         #endregion
-
 
         #region AI:
         public static float AI_MELEE_ATTACK_RATE; // Seconds between attacks.
@@ -36,7 +38,6 @@
         public static float AI_ARCHER_SHOOT_RANGE;
         public static float AI_ARCHER_STOP_RANGE;
         #endregion
-
 
         #region Buildings:
         public static readonly BuildingData BD_CAMP = new BuildingData("Camp", 250, 100);
@@ -67,7 +68,7 @@
 
 
         public static void bootstrap() {
-            KeyedSettings ks = new KeyedSettings(References.list.constants, true);
+            KeyedSettings ks = new KeyedSettings(References.list.constants, false);
 
             STARTING_RESOURCES = ks.getInt("GENERAL_STARTING-RESOURCES", 1000, "The number of resources that the player starts with.");
             STARTING_TROOP_CAP = ks.getInt("GENERAL_STARTING-TROOP-CAP", 6);
@@ -98,12 +99,12 @@
             AI_ARCHER_SHOOT_RANGE = ks.getFloat("AI_ARCHER_SHOOT-RANGE", 15f);
             AI_ARCHER_STOP_RANGE = ks.getFloat("AI_ARCHER_STOP-RANGE", 10f);
 
-            BUILDER_MAX_CARRY = ks.getInt("UNIT_BUILDER_MAX-CARRY", 500);
-            BUILDER_COLLECT_PER_STRIKE = ks.getInt("UNIT_BUILDER_COLLECT-PER-STRIKE", 25);
+            BUILDER_MAX_CARRY = ks.getInt("UNIT_BUILDER_MAX-CARRY", 500, "How many resources a builder can carry with them.");
+            BUILDER_COLLECT_PER_STRIKE = ks.getInt("UNIT_BUILDER_COLLECT-PER-STRIKE", 5, "How many resources are collected/damage done every time a builder hits a harvestable.");
             BUILDER_STRIKE_RATE = ks.getFloat("UNIT_BUILDER_STRIKE-RATE", 1f);
 
 
-        ks.save("Assets/battleGame/data/settings.txt");
+            ks.save("Assets/battleGame/data/settings.txt");
         }
     }
 }

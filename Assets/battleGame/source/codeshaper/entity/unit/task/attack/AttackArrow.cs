@@ -15,7 +15,7 @@ namespace codeshaper.entity.unit.task.attack {
 
         protected override void preformAttack(SidedObjectEntity target) {
             Projectile arrow = (Projectile)this.unit.map.spawnEntity(Registry.projectileArrow, this.unit.transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
-            arrow.setProjectileInfo(this.unit, this.unit.getData().getDamageDelt(), target);
+            arrow.setProjectileInfo(this.unit, this.unit.unitStats.getAttack(), target);
         }
     }
 }

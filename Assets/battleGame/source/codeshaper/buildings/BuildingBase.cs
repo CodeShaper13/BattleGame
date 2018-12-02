@@ -4,10 +4,11 @@ using codeshaper.data;
 using codeshaper.entity;
 using codeshaper.util;
 using UnityEngine;
+using codeshaper.nbt;
 
 namespace codeshaper.buildings {
 
-    public abstract class BuildingBase : SidedObjectEntity {
+    public abstract class BuildingBase : SidedObjectEntity, IStaticEntity {
 
         /// <summary>
         /// True if the building is being constructed.  Buildings that
@@ -18,15 +19,9 @@ namespace codeshaper.buildings {
 
         private int targetRotation = 0;
 
-        protected override void onUpdate() {
+        public override void onUpdate() {
             if(!this.constructing) {
                 this.preformTask();
-            }
-
-            // Debug outline.
-            if(Main.DEBUG) {
-                Vector2 v = this.getFootprintSize();
-                GLDebug.DrawCube(this.transform.position, Quaternion.identity, new Vector3(v.x, 0.35f, v.y), new Color(0.5f, 0, 0.5f));
             }
 
             // Rotate the building slowly if it is being rotated.
@@ -36,6 +31,13 @@ namespace codeshaper.buildings {
                     Quaternion.Euler(0, this.targetRotation, 0),
                     250 * Time.deltaTime);
             }
+        }
+
+        public override void drawDebug() {
+            base.drawDebug();
+
+            Vector2 v = this.getFootprintSize();
+            GLDebug.DrawCube(this.transform.position, Quaternion.identity, new Vector3(v.x, 0.35f, v.y), Colors.purple);
         }
 
         public override int getButtonMask() {
@@ -63,18 +65,6 @@ namespace codeshaper.buildings {
             return (Mathf.Max(v.x, v.y) / 2);
         }
 
-        public override void onDeathCallback() {
-            base.onDeathCallback();
-
-            // Hacky way to remove unit from the party.
-            CameraMover cm = CameraMover.instance();
-            if (cm.selectedBuilding == this) {
-                cm.selectedBuilding = null;
-            }
-
-            GameObject.Destroy(this.gameObject);
-        }
-
         /// <summary>
         /// Called every frame for the building to preform it's task, if it has any.
         /// </summary>
@@ -97,21 +87,19 @@ namespace codeshaper.buildings {
         /// </summary>
         public bool increaseConstructed(bool deductResources) {
             this.buildProgress += (Constants.CONSTRUCT_RATE * Time.deltaTime);
-            bool finished = false;
+            this.setHealth((int)this.buildProgress);
 
-            if((int)this.buildProgress >= this.getMaxHealth()) {
-                this.constructing = false;
-                this.buildProgress = 0;
-                finished = true;
-            }
-
-            if(deductResources && (int)buildProgress > this.getHealth()) {
+            if (deductResources && (int)buildProgress > this.getHealth()) {
                 this.getTeam().reduceResources(1);
             }
 
-            this.setHealth((int)this.buildProgress);
+            if ((int)this.buildProgress >= this.getMaxHealth()) {
+                this.constructing = false;
+                this.buildProgress = 0;
+                return true;
+            }
 
-            return finished;
+            return false;
         }
 
         public int getCost() {

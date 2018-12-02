@@ -16,6 +16,12 @@ namespace codeshaper.registry {
 
         public static RegisteredObject projectileArrow;
 
+        public static RegisteredObject harvestableTree;
+        public static RegisteredObject harvestableDeadTree;
+        public static RegisteredObject harvestableCactus;
+        public static RegisteredObject harvestableRock;
+        public static RegisteredObject harvestableSkull;
+
         public static RegisteredObject buildingCamp;
         public static RegisteredObject buildingProducer;
         public static RegisteredObject buildingWorkshop;
@@ -37,9 +43,9 @@ namespace codeshaper.registry {
         /// <summary>
         /// Returns a RegisteredObject from the registry by ID, or null if nothing is registered with that id.
         /// </summary>
-        public static RegisteredObject getObjectfromRegistry(int id) {
+        public static RegisteredObject getObjectFromRegistry(int id) {
             if(id < 0 || id > REGISTRY_SIZE) {
-                throw new Exception("Index out of range!");
+                throw new Exception("Index out of registry range!");
             }
             return Registry.objectRegistry[id];
         }
@@ -47,7 +53,7 @@ namespace codeshaper.registry {
         /// <summary>
         /// Returns the ID of the passed Entity, or -1 on error.
         /// </summary>
-        public static int getIdFromObject(SidedObjectEntity entity) {
+        public static int getIdFromObject(MapObject entity) {
             Type t = entity.GetType();
             RegisteredObject re;
             for (int i = 0; i < REGISTRY_SIZE; i++) {
@@ -80,9 +86,16 @@ namespace codeshaper.registry {
             Registry.specialWarWagon = register(32, References.list.specialWarWagon);
             Registry.specialCannon = register(33, References.list.specialCannon);
 
-            //Projectile ids are 64-127.
+            // Harvestable ids are 64 - 95.
+            Registry.harvestableTree = register(64, References.list.harvestableTreePrefab);
+            Registry.harvestableDeadTree = register(65, References.list.harvestableDeadTreePrefab);
+            Registry.harvestableCactus = register(66, References.list.harvestableCactusPrefab);
+            Registry.harvestableRock = register(67, References.list.harvestableRockPrefab);
+            Registry.harvestableSkull = register(68, References.list.harvestableSkullPrefab);
 
-            Registry.projectileArrow = register(64, References.list.projectileArrow);
+            // Projectile ids are 96-127.
+
+            Registry.projectileArrow = register(96, References.list.projectileArrow);
 
             // Buildings are ids 128 - 255.
             Registry.buildingCamp = register(128, References.list.buildingCamp);

@@ -1,4 +1,4 @@
-﻿using codeshaper.util;
+﻿using codeshaper.nbt;
 using fNbt;
 using UnityEngine.SceneManagement;
 
@@ -21,7 +21,7 @@ namespace codeshaper.save {
         }
 
         public NbtCompound writeToNbt() {
-            NbtCompound tag = new NbtCompound();
+            NbtCompound tag = new NbtCompound(this.sceneName);
             tag.setTag("unlocked", this.unlocked);
             return tag;
         }

@@ -29,6 +29,10 @@ namespace codeshaper.item {
             return this.description;
         }
 
+        public GameObject getObj() {
+            return this.obj;
+        }
+
         public static void bootstrap() {
             yoke = new Item("Yoke", "A wooden yoke for oxen or caddle", null);
             playingCard = new Item("Playing Card", "description", null);

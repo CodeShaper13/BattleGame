@@ -21,7 +21,7 @@ namespace codeshaper.gui {
         /// Enables the pause screen.
         /// </summary>
         public override void onGuiOpen() {
-            if(Map.getInstance() == null) {
+            if(Map.instance() == null) {
                 // Must be in the town.
                 this.quitGameButton.gameObject.SetActive(true);
             } else {
@@ -40,7 +40,7 @@ namespace codeshaper.gui {
         }
 
         public void callback_exitToTown() {
-            Map.getInstance().writeToNbt();
+            Map.instance().saveMap();
             //SceneManager.LoadScene("town");
         }
 

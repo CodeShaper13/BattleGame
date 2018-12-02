@@ -1,4 +1,5 @@
-﻿using codeshaper.util;
+﻿using codeshaper.nbt;
+using codeshaper.util;
 using fNbt;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ namespace codeshaper.save {
 
     public class GameState {
 
-        private static string FILE_NAME = "/state.data";
+        public static readonly string FILE_NAME = "/state.nbt";
 
         // References:
         public List<Level> allLevels = new List<Level>();
@@ -44,7 +45,7 @@ namespace codeshaper.save {
             this.level4 = new Level(this, "Level4", this.level5);
             this.level5 = new Level(this, "Level5");
 
-            if(!Util.doesSaveExists()) {
+            if(!FileUtils.doesSaveExists()) {
                 // Save a "blank" game state so we know the game save exists.
                 this.saveToFile();
             }
@@ -105,13 +106,14 @@ namespace codeshaper.save {
             root.setTag("townObstacleRemoved", this.townObstacleRemoved);
             root.setTag("seenCutscene", this.seenCutscene);
 
-            NbtCompound levelsTag = new NbtCompound();
+            NbtCompound levelsTag = new NbtCompound("levels");
             foreach(Level level in this.allLevels) {
                 levelsTag.Add(level.writeToNbt());
             }
-            root.setTag("levels", levelsTag);
+            root.Add(levelsTag);
 
             NbtFile file = new NbtFile(root);
+            Directory.CreateDirectory(Main.SAVE_PATH);
             file.SaveToFile(Main.SAVE_PATH + FILE_NAME, NbtCompression.None);
         }
     }
